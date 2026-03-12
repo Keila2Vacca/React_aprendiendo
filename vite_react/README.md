@@ -1,16 +1,42 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+## Integrantes del grupo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Nombre | Rama feature | Hooks asignados |
+|--------|-------------|-----------------|
+| **Keila** | `feature/knvb` | useState |
+| **Karen** | `feature/kmbm` |  |
+| **Gerardo** | `feature/g` | |
 
-## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tabla general de Hooks
 
-## Expanding the ESLint configuration
+| Hook | Descripción corta | Categoría | Autora/or |
+|------|-------------------|-----------|-----------|
+| `useState` | Maneja el estado local de un componente funcional | Estado | Keila |
+| `useReducer` | Gestiona estado complejo mediante acciones y un reducer | Estado | Keila |
+| `useRef` | Crea una referencia mutable que no causa re-render | Referencias | Karen |
+| `useImperativeHandle` | Expone métodos del hijo al padre vía ref | Referencias | Karen |
+| `useContext` | Accede a un contexto sin prop drilling | Contexto y datos externos | Karen |
+| `useSyncExternalStore` | Suscribe el componente a un store externo | Contexto y datos externos | Gerardo |
+| `useId` | Genera IDs únicos y estables para accesibilidad | Contexto y datos externos | Gerardo |
+| `useMemo` | Memoriza el resultado de un cálculo costoso | Performance | Gerardo |
+| `useCallback` | Memoriza una función para evitar recreaciones | Performance | Gerardo |
+| `useTransition` | Marca actualizaciones de estado como no urgentes | Performance | Karen |
+| `useDeferredValue` | Difiere la actualización de un valor específico | Performance | Karen |
+| `useEffect` | Ejecuta efectos secundarios después del render | Efectos / ciclo de vida | Keila |
+| `useLayoutEffect` | Como useEffect pero antes de pintar en pantalla | Efectos / ciclo de vida | Keila |
+| `useInsertionEffect` | Inyecta estilos antes de que el DOM se pinte | Efectos / ciclo de vida | Gerardo |
+| `useDebugValue` | Muestra etiqueta personalizada en React DevTools | Debug | Keila |
+| `useOptimistic` | Actualiza la UI de forma optimista antes del servidor | Nuevos en React 19 | Karen |
+| `useFormStatus` | Accede al estado de envío del formulario padre | Nuevos en React 19 | Karen |
+| `useActionState` | Gestiona el estado de una acción asíncrona de formulario | Nuevos en React 19 | Gerardo |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+## Explicaciones por integrante
+
+
+###  Keila
+
+**useState** — El componente anota lo que no puede olvidar y si cambia un numero, este se guarda ahí.
