@@ -12,13 +12,14 @@ import UseLayoutEffectEjemplo from './playground/hooks/useLayoutEffect/UseLayout
 import UseDebugValueEjemplo from './playground/hooks/useDebugValue/UseDebugValueEjemplo'
 
 // // Karen
-// import UseRefEjemplo from './playground/hooks/useRef/UseRefEjemplo'
-// import UseImperativeHandleEjemplo from './playground/hooks/useImperativeHandle/UseImperativeHandleEjemplo'
-// import UseContextEjemplo from './playground/hooks/useContext/UseContextEjemplo'
-// import UseTransitionEjemplo from './playground/hooks/useTransition/UseTransitionEjemplo'
-// import UseDeferredValueEjemplo from './playground/hooks/useDeferredValue/UseDeferredValueEjemplo'
-// import UseOptimisticEjemplo from './playground/hooks/useOptimistic/UseOptimisticEjemplo'
-// import UseFormStatusEjemplo from './playground/hooks/useFormStatus/UseFormStatusEjemplo'
+import UseContextEjemplo from './playground/Hooks/UseContext/UseContextEjemplo'
+import UseTransitionEjemplo from './playground/Hooks/UseTransition/UseTransitionEjemplo'
+import UseImperativeHandleEjemplo from './playground/Hooks/UseImperativeHandle/UseImperativeHandleEjemplo'
+import UseDeferredValueEjemplo from './playground/Hooks/UseDeferredValue/UseDeferredValueEjemplo'
+import UseRefEjemplo from './playground/Hooks/UseRef/UseRefEjemplo'
+import UseOptimisticEjemplo from './playground/Hooks/UseOptimistic/UseOptimisticEjemplo'
+import UseFormStatusEjemplo from './playground/Hooks/UseFormStatus/UseFormStatusEjemplo'
+
 
 // // Gerardo
 import UseSyncExternalStoreEjemplo from './playground/Hooks/UseSyncExternalStore/UseSyncExternalStore'
@@ -42,13 +43,13 @@ function App() {
         <Route path='/HookuseDebugValue' element={<UseDebugValueEjemplo />} />
 
         {/* Karen */}
-        {/* <Route path='/HookuseRef' element={<UseRefEjemplo />} />
-        <Route path='/HookuseImperativeHandle' element={<UseImperativeHandleEjemplo />} />
         <Route path='/HookuseContext' element={<UseContextEjemplo />} />
         <Route path='/HookuseTransition' element={<UseTransitionEjemplo />} />
+        <Route path='/HookuseImperativeHandle' element={<UseImperativeHandleEjemplo />} />
         <Route path='/HookuseDeferredValue' element={<UseDeferredValueEjemplo />} />
+        <Route path='/HookuseRef' element={<UseRefEjemplo />} />
         <Route path='/HookuseOptimistic' element={<UseOptimisticEjemplo />} />
-        <Route path='/HookuseFormStatus' element={<UseFormStatusEjemplo />} /> */}
+        <Route path='/HookuseFormStatus' element={<UseFormStatusEjemplo />} />
 
 
 
