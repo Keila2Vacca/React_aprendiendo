@@ -6,18 +6,11 @@ import Saludar from './playground/Component'
 import HomeHooks from './playground/HomeHooks'
 import HookUseNavigate from './playground/HookUseNavigate'
 import HookUseState from './playground/HookUseState'
+import HookLayout from "./playground/HookLayout";
 
 function App() {
   
   return (
-      
-      // <h1>Keila Nathaly</h1>
-      // <img class="logo" src="/Pascal.jpg" alt="Pascal" />
-      // <img class="logo" src="/Pascal1.jpg" alt="Pascal" />
-      // <Saludar/>
-      // <HomeHooks/>
-      // <HookUseNavigate/>
-      // <HookUseState/> 
 
       <BrowserRouter>
         <Routes>
@@ -25,6 +18,7 @@ function App() {
           <Route path='/saludar' element={<Saludar/>}></Route>
           <Route path='/usenavigate' element={<HookUseNavigate/>}></Route>
           <Route path='/usestate' element={<HookUseState/>}></Route>
+          <Route path='/hooklayout' element={<HookLayout/>}></Route>
         </Routes>
       </BrowserRouter>
   
