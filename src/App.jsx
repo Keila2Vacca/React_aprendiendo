@@ -21,12 +21,12 @@ import UseDebugValueEjemplo from './playground/hooks/useDebugValue/UseDebugValue
 // import UseFormStatusEjemplo from './playground/hooks/useFormStatus/UseFormStatusEjemplo'
 
 // // Gerardo
-// import UseSyncExternalStoreEjemplo from './playground/hooks/useSyncExternalStore/UseSyncExternalStoreEjemplo'
-// import UseIdEjemplo from './playground/hooks/useId/UseIdEjemplo'
-// import UseMemoEjemplo from './playground/hooks/useMemo/UseMemoEjemplo'
-// import UseCallbackEjemplo from './playground/hooks/useCallback/UseCallbackEjemplo'
-// import UseInsertionEffectEjemplo from './playground/hooks/useInsertionEffect/UseInsertionEffectEjemplo'
-// import UseActionStateEjemplo from './playground/hooks/useActionState/UseActionStateEjemplo'
+import UseSyncExternalStoreEjemplo from './playground/Hooks/UseSyncExternalStore/UseSyncExternalStore'
+import UseIdEjemplo from './playground/Hooks/UseId/useId'
+import UseMemoEjemplo from './playground/Hooks/UseMemo/UseMemo'
+import UseCallbackEjemplo from './playground/Hooks/UseCallback/UseCallback'
+import UseInsertionEffectEjemplo from './playground/Hooks/UseInsertionEffect/UseInsertionEffect'
+import UseActionStateEjemplo from './playground/Hooks/UseActionState/UseActionState'
 
 function App() {
   return (
@@ -50,13 +50,14 @@ function App() {
         <Route path='/HookuseOptimistic' element={<UseOptimisticEjemplo />} />
         <Route path='/HookuseFormStatus' element={<UseFormStatusEjemplo />} /> */}
 
-        {/* Gerardo */}
-        {/* <Route path='/HookuseSyncExternalStore' element={<UseSyncExternalStoreEjemplo />} />
+
+
+        <Route path='/HookuseSyncExternalStore' element={<UseSyncExternalStoreEjemplo />} />
         <Route path='/HookuseId' element={<UseIdEjemplo />} />
         <Route path='/HookuseMemo' element={<UseMemoEjemplo />} />
         <Route path='/HookuseCallback' element={<UseCallbackEjemplo />} />
         <Route path='/HookuseInsertionEffect' element={<UseInsertionEffectEjemplo />} />
-        <Route path='/HookuseActionState' element={<UseActionStateEjemplo />} />*/}
+        <Route path='/HookuseActionState' element={<UseActionStateEjemplo />} />
       </Routes> 
     </BrowserRouter>
   )
