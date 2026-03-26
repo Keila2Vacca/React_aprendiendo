@@ -38,6 +38,8 @@ const LoginPage = () => {
       return;
     }
 
+    
+
     // Success capture
     Swal.fire({
       icon: 'success',
