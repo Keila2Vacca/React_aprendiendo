@@ -6,7 +6,7 @@ import HomeHooks from './playground/HomeHooks'
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage'
-// import RegisterPage from './pages/auth/RegisterPage'
+import RegisterPage from './pages/auth/RegisterPage'
 // import ForgotPage from './pages/auth/ForgotPage'
 // import ResetPage from './pages/auth/ResetPage'
 
@@ -41,8 +41,8 @@ function App() {
       <Routes>
         {/* Auth Routes */}
         <Route path='/' element={<LoginPage />} />
-        {/* <Route path='/register' element={<RegisterPage />} />
-        <Route path='/forgot-password' element={<ForgotPage />} />
+        <Route path='/register' element={<RegisterPage />} />
+        {/* <Route path='/forgot-password' element={<ForgotPage />} />
         <Route path='/reset-password' element={<ResetPage />} /> */}
 
         {/* Existing Hooks Home */}
