@@ -9,6 +9,8 @@
 
 Sistema web SPA (Single Page Application) para la gestión y venta de pasajes intermunicipales de la **Cooperativa de Transporte Hacaritama** (Ábrego, Norte de Santander), desarrollado con React.
 
+prueba del bloqueo de main
+
 ---
 
 ## Descripción
