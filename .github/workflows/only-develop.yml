@@ -1,4 +1,4 @@
-name: Allow only develop to main
+name: restrict-pr
 
 on:
   pull_request:
@@ -6,14 +6,13 @@ on:
       - main
 
 jobs:
-  check-branch:
+  restrict:
     runs-on: ubuntu-latest
     steps:
-      - name: Check source branch
+      - name: Validate branch
         run: |
+          echo "Branch origen: ${{ github.head_ref }}"
           if [[ "${{ github.head_ref }}" != "develop" ]]; then
-            echo "Solo se permiten PR desde 'develop'"
+            echo "❌ Solo se permite develop → main"
             exit 1
-          else
-            echo "PR válido desde develop"
           fi
