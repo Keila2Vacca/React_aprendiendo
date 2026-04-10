@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const hooks = [
   // --- Estado ---
@@ -45,8 +46,18 @@ const categoriaColores = {
 };
 
 export default function HomeHooks() {
+  const { user, logout } = useAuth();
+
   return (
     <div style={styles.page}>
+      <header style={styles.header}>
+        <h1 style={styles.title}>React Hooks Playground</h1>
+        <div style={styles.userInfo}>
+          {user && <span>Bienvenido, {user.displayName || user.email}</span>}
+          <Link to="/sessions" style={styles.link}>Ver Sesiones</Link>
+          <button onClick={logout} style={styles.logoutButton}>Cerrar Sesión</button>
+        </div>
+      </header>
 
 
       <div style={styles.tableWrapper}>
@@ -83,7 +94,7 @@ export default function HomeHooks() {
 
 const styles = {
   page: { fontFamily: "'Segoe UI', sans-serif", maxWidth: 1100, margin: "0 auto", padding: "2rem 1rem" },
-  header: { textAlign: "center", marginBottom: "2rem" },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', padding: '10px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
   title: { fontSize: "2rem", color: "#1e1b4b", margin: 0 },
   subtitle: { color: "#6b7280", marginTop: "0.5rem" },
   note: { backgroundColor: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "0.75rem 1rem", display: "inline-block", marginTop: "0.5rem", color: "#1e40af", fontSize: "0.9rem" },
@@ -94,4 +105,7 @@ const styles = {
   tdName: { padding: "0.7rem 1rem", fontWeight: 700, color: "#1e1b4b", whiteSpace: "nowrap" },
   btn: { backgroundColor: "#4f46e5", color: "#fff", padding: "0.35rem 0.9rem", borderRadius: 6, textDecoration: "none", fontSize: "0.82rem", display: "inline-block" },
   badge: { color: "#fff", padding: "0.25rem 0.6rem", borderRadius: 20, fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap" },
+  userInfo: { display: 'flex', alignItems: 'center', gap: '10px' },
+  link: { padding: '8px 16px', backgroundColor: '#4f46e5', color: '#fff', textDecoration: 'none', borderRadius: '4px' },
+  logoutButton: { padding: '8px 16px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' },
 };

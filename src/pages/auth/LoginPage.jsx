@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, GithubAuthProvider } from "firebase/auth";
+import { auth, db } from "../../firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * LoginPage component
@@ -9,13 +13,14 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
  */
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { setSessionId } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Basic Validation
@@ -38,27 +43,94 @@ const LoginPage = () => {
       return;
     }
 
-    
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
 
-    // Success capture
-    Swal.fire({
-      icon: 'success',
-      title: '¡Ingreso Exitoso!',
-      html: `<b>Correo:</b> ${formData.email}<br/><b>Contraseña:</b> ${formData.password}`,
-      confirmButtonText: 'Continuar'
-    }).then(() => {
-      // Dummy action, normally navigate to dashboard
-      console.log("Logged in");
-    });
+      // Registrar sesión en Firestore
+      const sessionId = `${user.uid}_${Date.now()}`;
+      const loginTime = new Date();
+      await setDoc(doc(db, "userSessions", sessionId), {
+        userId: user.uid,
+        userEmail: user.email,
+        userName: user.displayName || user.email.split('@')[0],
+        loginTime: serverTimestamp(),
+        logoutTime: null,
+        sessionDuration: null,
+        authMethod: "email",
+        status: "active"
+      });
+
+      setSessionId(sessionId, loginTime);
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Ingreso Exitoso!',
+        text: `Bienvenido ${user.displayName || user.email}`,
+        confirmButtonText: 'Continuar'
+      }).then(() => {
+        navigate('/hooks'); // O a dashboard
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de autenticación',
+        text: error.message,
+      });
+    }
   };
 
-  const handleSocialLogin = (provider) => {
-    Swal.fire({
-      icon: 'info',
-      title: `Autenticación con ${provider}`,
-      text: `Se ha simulado el inicio de sesión exitoso con ${provider}.`,
-      confirmButtonText: 'Aceptar'
-    });
+  const handleSocialLogin = async (provider) => {
+    let authProvider;
+    switch (provider) {
+      case 'Google':
+        authProvider = new GoogleAuthProvider();
+        break;
+      case 'Facebook':
+        authProvider = new FacebookAuthProvider();
+        break;
+      case 'GitHub':
+        authProvider = new GithubAuthProvider();
+        break;
+      default:
+        return;
+    }
+
+    try {
+      const result = await signInWithPopup(auth, authProvider);
+      const user = result.user;
+
+      // Registrar sesión en Firestore
+      const sessionId = `${user.uid}_${Date.now()}`;
+      const loginTime = new Date();
+      await setDoc(doc(db, "userSessions", sessionId), {
+        userId: user.uid,
+        userEmail: user.email,
+        userName: user.displayName || user.email.split('@')[0],
+        loginTime: serverTimestamp(),
+        logoutTime: null,
+        sessionDuration: null,
+        authMethod: provider.toLowerCase(),
+        status: "active"
+      });
+
+      setSessionId(sessionId, loginTime);
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Ingreso Exitoso!',
+        text: `Bienvenido ${user.displayName || user.email}`,
+        confirmButtonText: 'Continuar'
+      }).then(() => {
+        navigate('/hooks');
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de autenticación',
+        text: error.message,
+      });
+    }
   };
 
   return (
