@@ -2,99 +2,82 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, GithubAuthProvider } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  GithubAuthProvider,
+} from "firebase/auth";
 import { auth, db } from "../../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "../../context/AuthContext";
 
-/**
- * LoginPage component
- * Features: Email/password login, social mock logins, sweetalert capture
- */
 const LoginPage = () => {
   const navigate = useNavigate();
   const { setSessionId } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Basic Validation
+
     if (!formData.email || !formData.password) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Campos incompletos',
-        text: 'Por favor complete todos los campos',
-      });
+      Swal.fire({ icon: "error", title: "Campos incompletos", text: "Por favor complete todos los campos" });
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Correo inválido',
-        text: 'Por favor ingrese un correo electrónico válido',
-      });
+      Swal.fire({ icon: "error", title: "Correo inválido", text: "Por favor ingrese un correo electrónico válido" });
       return;
     }
 
     try {
-      const email = formData.email.trim().toLowerCase();
-      const password = formData.password;
-      console.log('Intentando login con:', email);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
-      // Registrar sesión en Firestore
       const sessionId = `${user.uid}_${Date.now()}`;
       const loginTime = new Date();
       await setDoc(doc(db, "userSessions", sessionId), {
         userId: user.uid,
         userEmail: user.email,
-        userName: user.displayName || user.email.split('@')[0],
+        userName: user.displayName || user.email.split("@")[0],
         loginTime: serverTimestamp(),
         logoutTime: null,
         sessionDuration: null,
         authMethod: "email",
-        status: "active"
+        status: "active",
       });
 
       setSessionId(sessionId, loginTime);
 
       Swal.fire({
-        icon: 'success',
-        title: '¡Ingreso Exitoso!',
+        icon: "success",
+        title: "¡Ingreso Exitoso!",
         text: `Bienvenido ${user.displayName || user.email}`,
-        confirmButtonText: 'Continuar'
-      }).then(() => {
-        navigate('/dashboard');
-      });
+        confirmButtonText: "Continuar",
+      }).then(() => navigate("/hooks"));
     } catch (error) {
-      console.error('Error de login:', error.code, error.message);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error de autenticación',
-        text: `${error.code}: ${error.message}`,
-      });
+      Swal.fire({ icon: "error", title: "Error de autenticación", text: error.message });
     }
   };
 
+  // ── MODIFICACIÓN PRINCIPAL ──────────────────────────────────────────────────
   const handleSocialLogin = async (provider) => {
     let authProvider;
+
     switch (provider) {
-      case 'Google':
+      case "Google":
         authProvider = new GoogleAuthProvider();
         break;
-      case 'Facebook':
+      case "Facebook":
         authProvider = new FacebookAuthProvider();
         break;
-      case 'GitHub':
+      case "GitHub":
         authProvider = new GithubAuthProvider();
+        // NUEVO: solicita el scope de email para obtener correos privados de GitHub
+        authProvider.addScope("user:email");
         break;
       default:
         return;
@@ -104,50 +87,52 @@ const LoginPage = () => {
       const result = await signInWithPopup(auth, authProvider);
       const user = result.user;
 
-      // Registrar sesión en Firestore
       const sessionId = `${user.uid}_${Date.now()}`;
       const loginTime = new Date();
       await setDoc(doc(db, "userSessions", sessionId), {
         userId: user.uid,
         userEmail: user.email,
-        userName: user.displayName || user.email.split('@')[0],
+        userName: user.displayName || user.email?.split("@")[0] || "Usuario",
         loginTime: serverTimestamp(),
         logoutTime: null,
         sessionDuration: null,
         authMethod: provider.toLowerCase(),
-        status: "active"
+        status: "active",
       });
 
       setSessionId(sessionId, loginTime);
 
       Swal.fire({
-        icon: 'success',
-        title: '¡Ingreso Exitoso!',
+        icon: "success",
+        title: "¡Ingreso Exitoso!",
         text: `Bienvenido ${user.displayName || user.email}`,
-        confirmButtonText: 'Continuar'
-      }).then(() => {
-        navigate('/dashboard');
-      });
+        confirmButtonText: "Continuar",
+      }).then(() => navigate("/hooks"));
+
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error de autenticación',
-        text: error.message,
-      });
+      // NUEVO: manejo especial para cuenta duplicada (ej: mismo email ya registrado con Google)
+      if (error.code === "auth/account-exists-with-different-credential") {
+        Swal.fire({
+          icon: "warning",
+          title: "Cuenta existente",
+          text: "Ya existe una cuenta con este correo usando otro método de inicio de sesión. Por favor inicia sesión con ese método.",
+        });
+      } else {
+        Swal.fire({ icon: "error", title: "Error de autenticación", text: error.message });
+      }
     }
   };
+  // ───────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex-1 w-screen min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="w-full max-w-md bg-gradient-to-br from-indigo-50 to-blue-100 rounded-2xl shadow-xl overflow-hidden z-10 p-8 transform transition-all relative">
 
-
-      <div className="w-full max-w-md bg-linear-to-br from-indigo-50 to-blue-100 rounded-2xl shadow-xl overflow-hidden z-10 p-8 transform transition-all relative">
-        
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Iniciar Sesión</h2>
           <p className="text-gray-500 text-sm">Ingrese sus credenciales para acceder</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
@@ -215,13 +200,14 @@ const LoginPage = () => {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-linear-to-br from-indigo-50 to-blue-100 text-gray-500">O continuar con</span>
+              <span className="px-2 bg-gradient-to-br from-indigo-50 to-blue-100 text-gray-500">O continuar con</span>
             </div>
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-3">
+            {/* Google */}
             <button
-              onClick={() => handleSocialLogin('Google')}
+              onClick={() => handleSocialLogin("Google")}
               className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -231,17 +217,23 @@ const LoginPage = () => {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
             </button>
+
+            {/* Facebook */}
             <button
-              onClick={() => handleSocialLogin('Facebook')}
+              onClick={() => handleSocialLogin("Facebook")}
               className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
             >
               <span className="font-semibold text-blue-600">Facebook</span>
             </button>
+
+            {/* MODIFICACIÓN: GitHub ahora tiene su SVG oficial en lugar de solo texto */}
             <button
-              onClick={() => handleSocialLogin('GitHub')}
+              onClick={() => handleSocialLogin("GitHub")}
               className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
             >
-              <span className="font-semibold text-gray-900">GitHub</span>
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+              </svg>
             </button>
           </div>
         </div>
