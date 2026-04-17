@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
+import { signInWithPopup } from "firebase/auth";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, db } from "../../firebase";
+import { googleProvider, auth, db } from "../../firebase";
 import { doc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 
 /**
@@ -117,15 +118,43 @@ const RegisterPage = () => {
     }
   };
 
-  const handleSocialLogin = (provider) => {
-    Swal.fire({
-      icon: 'info',
-      title: `Registro con ${provider}`,
-      text: `Se ha simulado el registro exitoso con ${provider}.`,
-      confirmButtonText: 'Aceptar'
-    });
-  };
+  const handleSocialLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
 
+      console.log("Usuario con Google:", user);
+
+      // Guardar en Firestore si es nuevo
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email,
+        phone: user.phoneNumber || "",
+        createdAt: serverTimestamp(),
+        authMethod: "google",
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Registro con Google exitoso!",
+        text: "Tu cuenta ha sido creada con Google.",
+        confirmButtonText: "Ir al Login",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/");
+        }
+      });
+    } catch (error) {
+      console.error("Error con Google:", error.code, error.message);
+      Swal.fire({
+        icon: "error",
+        title: "Error con Google",
+        text: `${error.code}: ${error.message}`,
+      });
+    }
+  };
+  
   return (
     <div className="flex-1 w-screen min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
 
