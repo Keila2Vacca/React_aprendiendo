@@ -2,15 +2,18 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, GithubAuthProvider } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../../firebase";
-import { doc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * RegisterPage component
  * Features: Name, Email, Password, Confirm Password with validations
  */
 const RegisterPage = () => {
+  const { setSessionId } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -117,15 +120,59 @@ const RegisterPage = () => {
     }
   };
 
-  const handleSocialLogin = (provider) => {
-    Swal.fire({
-      icon: 'info',
-      title: `Registro con ${provider}`,
-      text: `Se ha simulado el registro exitoso con ${provider}.`,
-      confirmButtonText: 'Aceptar'
-    });
-  };
+    const handleSocialLogin = async (provider) => {
+    let authProvider;
+    switch (provider) {
+      case 'Google':
+        authProvider = new GoogleAuthProvider();
+        break;
+      case 'Facebook':
+        authProvider = new FacebookAuthProvider();
+        break;
+      case 'GitHub':
+        authProvider = new GithubAuthProvider();
+        break;
+      default:
+        return;
+    }
 
+    try {
+      const result = await signInWithPopup(auth, authProvider);
+      const user = result.user;
+
+      // Registrar sesión en Firestore
+      const sessionId = `${user.uid}_${Date.now()}`;
+      const loginTime = new Date();
+      await setDoc(doc(db, "userSessions", sessionId), {
+        userId: user.uid,
+        userEmail: user.email,
+        userName: user.displayName || user.email.split('@')[0],
+        loginTime: serverTimestamp(),
+        logoutTime: null,
+        sessionDuration: null,
+        authMethod: provider.toLowerCase(),
+        status: "active"
+      });
+
+      setSessionId(sessionId, loginTime);
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Ingreso Exitoso!',
+        text: `Bienvenido ${user.displayName || user.email}`,
+        confirmButtonText: 'Continuar'
+      }).then(() => {
+        navigate('/dashboard');
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de autenticación',
+        text: error.message,
+      });
+    }
+  };
+  
   return (
     <div className="flex-1 w-screen min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
 
