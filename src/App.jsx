@@ -6,9 +6,12 @@ import HomeHooks from './playground/HomeHooks'
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage'
-// import RegisterPage from './pages/auth/RegisterPage'
-// import ForgotPage from './pages/auth/ForgotPage'
-// import ResetPage from './pages/auth/ResetPage'
+import RegisterPage from './pages/auth/RegisterPage'
+import ForgotPage from './pages/auth/ForgotPage'
+import ResetPage from './pages/auth/ResetPage'
+
+// Sessions Page
+import SessionsPage from './pages/SessionsPage'
 
 // Keila
 import UseStateEjemplo from './playground/hooks/useState/UseStateEjemplo'
@@ -18,21 +21,22 @@ import UseLayoutEffectEjemplo from './playground/hooks/useLayoutEffect/UseLayout
 import UseDebugValueEjemplo from './playground/hooks/useDebugValue/UseDebugValueEjemplo'
 
 // // Karen
-// import UseRefEjemplo from './playground/hooks/useRef/UseRefEjemplo'
-// import UseImperativeHandleEjemplo from './playground/hooks/useImperativeHandle/UseImperativeHandleEjemplo'
-// import UseContextEjemplo from './playground/hooks/useContext/UseContextEjemplo'
-// import UseTransitionEjemplo from './playground/hooks/useTransition/UseTransitionEjemplo'
-// import UseDeferredValueEjemplo from './playground/hooks/useDeferredValue/UseDeferredValueEjemplo'
-// import UseOptimisticEjemplo from './playground/hooks/useOptimistic/UseOptimisticEjemplo'
-// import UseFormStatusEjemplo from './playground/hooks/useFormStatus/UseFormStatusEjemplo'
+import UseContextEjemplo from './playground/Hooks/UseContext/UseContextEjemplo'
+import UseTransitionEjemplo from './playground/Hooks/UseTransition/UseTransitionEjemplo'
+import UseImperativeHandleEjemplo from './playground/Hooks/UseImperativeHandle/UseImperativeHandleEjemplo'
+import UseDeferredValueEjemplo from './playground/Hooks/UseDeferredValue/UseDeferredValueEjemplo'
+import UseRefEjemplo from './playground/Hooks/UseRef/UseRefEjemplo'
+import UseOptimisticEjemplo from './playground/Hooks/UseOptimistic/UseOptimisticEjemplo'
+import UseFormStatusEjemplo from './playground/Hooks/UseFormStatus/UseFormStatusEjemplo'
+
 
 // // Gerardo
-// import UseSyncExternalStoreEjemplo from './playground/hooks/useSyncExternalStore/UseSyncExternalStoreEjemplo'
-// import UseIdEjemplo from './playground/hooks/useId/UseIdEjemplo'
-// import UseMemoEjemplo from './playground/hooks/useMemo/UseMemoEjemplo'
-// import UseCallbackEjemplo from './playground/hooks/useCallback/UseCallbackEjemplo'
-// import UseInsertionEffectEjemplo from './playground/hooks/useInsertionEffect/UseInsertionEffectEjemplo'
-// import UseActionStateEjemplo from './playground/hooks/useActionState/UseActionStateEjemplo'
+import UseSyncExternalStoreEjemplo from './playground/Hooks/UseSyncExternalStore/UseSyncExternalStore'
+import UseIdEjemplo from './playground/Hooks/UseId/useId'
+import UseMemoEjemplo from './playground/Hooks/UseMemo/UseMemo'
+import UseCallbackEjemplo from './playground/Hooks/UseCallback/UseCallback'
+import UseInsertionEffectEjemplo from './playground/Hooks/UseInsertionEffect/UseInsertionEffect'
+import UseActionStateEjemplo from './playground/Hooks/UseActionState/UseActionState'
 
 function App() {
   return (
@@ -40,9 +44,12 @@ function App() {
       <Routes>
         {/* Auth Routes */}
         <Route path='/' element={<LoginPage />} />
-        {/* <Route path='/register' element={<RegisterPage />} />
+        <Route path='/register' element={<RegisterPage />} />
         <Route path='/forgot-password' element={<ForgotPage />} />
-        <Route path='/reset-password' element={<ResetPage />} /> */}
+        <Route path='/reset-password' element={<ResetPage />} />
+
+        {/* Sessions Route */}
+        <Route path='/sessions' element={<SessionsPage />} />
 
         {/* Existing Hooks Home */}
         <Route path='/hooks' element={<HomeHooks />} />
@@ -55,21 +62,22 @@ function App() {
         <Route path='/HookuseDebugValue' element={<UseDebugValueEjemplo />} />
 
         {/* Karen */}
-        {/* <Route path='/HookuseRef' element={<UseRefEjemplo />} />
-        <Route path='/HookuseImperativeHandle' element={<UseImperativeHandleEjemplo />} />
         <Route path='/HookuseContext' element={<UseContextEjemplo />} />
         <Route path='/HookuseTransition' element={<UseTransitionEjemplo />} />
+        <Route path='/HookuseImperativeHandle' element={<UseImperativeHandleEjemplo />} />
         <Route path='/HookuseDeferredValue' element={<UseDeferredValueEjemplo />} />
+        <Route path='/HookuseRef' element={<UseRefEjemplo />} />
         <Route path='/HookuseOptimistic' element={<UseOptimisticEjemplo />} />
-        <Route path='/HookuseFormStatus' element={<UseFormStatusEjemplo />} /> */}
+        <Route path='/HookuseFormStatus' element={<UseFormStatusEjemplo />} />
 
-        {/* Gerardo */}
-        {/* <Route path='/HookuseSyncExternalStore' element={<UseSyncExternalStoreEjemplo />} />
+
+
+        <Route path='/HookuseSyncExternalStore' element={<UseSyncExternalStoreEjemplo />} />
         <Route path='/HookuseId' element={<UseIdEjemplo />} />
         <Route path='/HookuseMemo' element={<UseMemoEjemplo />} />
         <Route path='/HookuseCallback' element={<UseCallbackEjemplo />} />
         <Route path='/HookuseInsertionEffect' element={<UseInsertionEffectEjemplo />} />
-        <Route path='/HookuseActionState' element={<UseActionStateEjemplo />} />*/}
+        <Route path='/HookuseActionState' element={<UseActionStateEjemplo />} />
       </Routes> 
     </BrowserRouter>
   )
