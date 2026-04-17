@@ -12,6 +12,7 @@ import ResetPage from './pages/auth/ResetPage'
 
 // Sessions Page
 import SessionsPage from './pages/SessionsPage'
+import Dashboard from './pages/Dashboard'
 
 // Keila
 import UseStateEjemplo from './playground/hooks/useState/UseStateEjemplo'
@@ -47,6 +48,9 @@ function App() {
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/forgot-password' element={<ForgotPage />} />
         <Route path='/reset-password' element={<ResetPage />} />
+
+        {/* Dashboard Route */}
+        <Route path='/dashboard' element={<Dashboard />} />
 
         {/* Sessions Route */}
         <Route path='/sessions' element={<SessionsPage />} />

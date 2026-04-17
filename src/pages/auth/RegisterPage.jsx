@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth, db } from "../../firebase";
+import { doc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 
 /**
  * RegisterPage component
@@ -20,7 +23,7 @@ const RegisterPage = () => {
     confirmPassword: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Basic validations
@@ -71,24 +74,47 @@ const RegisterPage = () => {
       return;
     }
 
-    // Capture success
-    Swal.fire({
-      icon: 'success',
-      title: '¡Registro Exitoso!',
-      html: `
-        <div style="text-align: left;">
-          <b>Nombre:</b> ${formData.name}<br/>
-          <b>Correo:</b> ${formData.email}<br/>
-          <b>Teléfono:</b> ${formData.phone}<br/>
-          <b>Contraseña:</b> ${formData.password}
-        </div>
-      `,
-      confirmButtonText: 'Ir al Login'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        navigate("/");
-      }
-    });
+    try {
+      const email = formData.email.trim().toLowerCase();
+      const password = formData.password;
+      console.log('📝 Iniciando registro con:', email);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log('✅ Usuario creado en Auth:', user.uid);
+
+      await updateProfile(user, {
+        displayName: formData.name,
+      });
+      console.log('✅ Perfil actualizado');
+
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: formData.name,
+        email: email,
+        phone: formData.phone,
+        createdAt: serverTimestamp(),
+        authMethod: "email",
+      });
+      console.log('✅ Datos guardados en Firestore');
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Registro Exitoso!',
+        text: 'Tu cuenta ha sido creada con éxito. Puedes iniciar sesión ahora.',
+        confirmButtonText: 'Ir al Login'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/");
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error de registro:', error.code, error.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de registro',
+        text: `${error.code}: ${error.message}`,
+      });
+    }
   };
 
   const handleSocialLogin = (provider) => {

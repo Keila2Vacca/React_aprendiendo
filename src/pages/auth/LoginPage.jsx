@@ -44,7 +44,10 @@ const LoginPage = () => {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const email = formData.email.trim().toLowerCase();
+      const password = formData.password;
+      console.log('Intentando login con:', email);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       // Registrar sesión en Firestore
@@ -69,13 +72,14 @@ const LoginPage = () => {
         text: `Bienvenido ${user.displayName || user.email}`,
         confirmButtonText: 'Continuar'
       }).then(() => {
-        navigate('/hooks'); // O a dashboard
+        navigate('/dashboard');
       });
     } catch (error) {
+      console.error('Error de login:', error.code, error.message);
       Swal.fire({
         icon: 'error',
         title: 'Error de autenticación',
-        text: error.message,
+        text: `${error.code}: ${error.message}`,
       });
     }
   };
@@ -122,7 +126,7 @@ const LoginPage = () => {
         text: `Bienvenido ${user.displayName || user.email}`,
         confirmButtonText: 'Continuar'
       }).then(() => {
-        navigate('/hooks');
+        navigate('/dashboard');
       });
     } catch (error) {
       Swal.fire({
@@ -137,7 +141,7 @@ const LoginPage = () => {
     <div className="flex-1 w-screen min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
 
 
-      <div className="w-full max-w-md bg-gradient-to-br from-indigo-50 to-blue-100 rounded-2xl shadow-xl overflow-hidden z-10 p-8 transform transition-all relative">
+      <div className="w-full max-w-md bg-linear-to-br from-indigo-50 to-blue-100 rounded-2xl shadow-xl overflow-hidden z-10 p-8 transform transition-all relative">
         
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Iniciar Sesión</h2>
@@ -211,7 +215,7 @@ const LoginPage = () => {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gradient-to-br from-indigo-50 to-blue-100 text-gray-500">O continuar con</span>
+              <span className="px-2 bg-linear-to-br from-indigo-50 to-blue-100 text-gray-500">O continuar con</span>
             </div>
           </div>
 
