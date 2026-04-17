@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import { signInWithPopup } from "firebase/auth";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, GithubAuthProvider } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { googleProvider, auth, db } from "../../firebase";
-import { doc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * RegisterPage component
  * Features: Name, Email, Password, Confirm Password with validations
  */
 const RegisterPage = () => {
+  const { setSessionId } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -118,39 +120,55 @@ const RegisterPage = () => {
     }
   };
 
-  const handleSocialLogin = async () => {
+    const handleSocialLogin = async (provider) => {
+    let authProvider;
+    switch (provider) {
+      case 'Google':
+        authProvider = new GoogleAuthProvider();
+        break;
+      case 'Facebook':
+        authProvider = new FacebookAuthProvider();
+        break;
+      case 'GitHub':
+        authProvider = new GithubAuthProvider();
+        break;
+      default:
+        return;
+    }
+
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, authProvider);
       const user = result.user;
 
-      console.log("Usuario con Google:", user);
-
-      // Guardar en Firestore si es nuevo
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        name: user.displayName,
-        email: user.email,
-        phone: user.phoneNumber || "",
-        createdAt: serverTimestamp(),
-        authMethod: "google",
+      // Registrar sesión en Firestore
+      const sessionId = `${user.uid}_${Date.now()}`;
+      const loginTime = new Date();
+      await setDoc(doc(db, "userSessions", sessionId), {
+        userId: user.uid,
+        userEmail: user.email,
+        userName: user.displayName || user.email.split('@')[0],
+        loginTime: serverTimestamp(),
+        logoutTime: null,
+        sessionDuration: null,
+        authMethod: provider.toLowerCase(),
+        status: "active"
       });
 
+      setSessionId(sessionId, loginTime);
+
       Swal.fire({
-        icon: "success",
-        title: "¡Registro con Google exitoso!",
-        text: "Tu cuenta ha sido creada con Google.",
-        confirmButtonText: "Ir al Login",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/");
-        }
+        icon: 'success',
+        title: '¡Ingreso Exitoso!',
+        text: `Bienvenido ${user.displayName || user.email}`,
+        confirmButtonText: 'Continuar'
+      }).then(() => {
+        navigate('/dashboard');
       });
     } catch (error) {
-      console.error("Error con Google:", error.code, error.message);
       Swal.fire({
-        icon: "error",
-        title: "Error con Google",
-        text: `${error.code}: ${error.message}`,
+        icon: 'error',
+        title: 'Error de autenticación',
+        text: error.message,
       });
     }
   };

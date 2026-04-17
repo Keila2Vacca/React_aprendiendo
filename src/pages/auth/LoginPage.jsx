@@ -22,7 +22,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Basic Validation
     if (!formData.email || !formData.password) {
       Swal.fire({
@@ -137,17 +137,18 @@ const LoginPage = () => {
     }
   };
 
+
   return (
     <div className="flex-1 w-screen min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
 
 
       <div className="w-full max-w-md bg-linear-to-br from-indigo-50 to-blue-100 rounded-2xl shadow-xl overflow-hidden z-10 p-8 transform transition-all relative">
-        
+
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Iniciar Sesión</h2>
           <p className="text-gray-500 text-sm">Ingrese sus credenciales para acceder</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
