@@ -9,9 +9,23 @@ const SessionsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const filteredSessions = useMemo(() => {
+    const search = searchTerm.toLowerCase().trim();
+    if (!search) return sessions;
+    return sessions.filter(session =>
+      session.userName?.toLowerCase().includes(search) ||
+      session.userEmail?.toLowerCase().includes(search) ||
+      session.authMethod?.toLowerCase().includes(search)
+    );
+  }, [sessions, searchTerm]);
+
   useEffect(() => {
     const fetchSessions = async () => {
-      if (!user) return;
+      if (!user) {
+        setSessions([]);
+        setLoading(false);
+        return;
+      }
       const q = query(collection(db, "userSessions"), orderBy("loginTime", "desc"));
       const querySnapshot = await getDocs(q);
       const sessionsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -64,17 +78,25 @@ const SessionsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredSessions.map(session => (
-              <tr key={session.id} className="hover:bg-gray-50">
-                <td className="py-2 px-4 border-b">{session.userName}</td>
-                <td className="py-2 px-4 border-b">{session.userEmail}</td>
-                <td className="py-2 px-4 border-b">{formatDate(session.loginTime)}</td>
-                <td className="py-2 px-4 border-b">{formatDate(session.logoutTime)}</td>
-                <td className="py-2 px-4 border-b">{formatDuration(session.sessionDuration)}</td>
-                <td className="py-2 px-4 border-b">{session.authMethod}</td>
-                <td className="py-2 px-4 border-b">{session.status}</td>
+            {filteredSessions.length > 0 ? (
+              filteredSessions.map(session => (
+                <tr key={session.id} className="hover:bg-gray-50">
+                  <td className="py-2 px-4 border-b">{session.userName}</td>
+                  <td className="py-2 px-4 border-b">{session.userEmail}</td>
+                  <td className="py-2 px-4 border-b">{formatDate(session.loginTime)}</td>
+                  <td className="py-2 px-4 border-b">{formatDate(session.logoutTime)}</td>
+                  <td className="py-2 px-4 border-b">{formatDuration(session.sessionDuration)}</td>
+                  <td className="py-2 px-4 border-b">{session.authMethod}</td>
+                  <td className="py-2 px-4 border-b">{session.status}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td className="py-6 px-4 border-b text-center" colSpan={7}>
+                  No se encontraron registros.
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
