@@ -22,6 +22,8 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
+    // Basic Validation
     if (!formData.email || !formData.password) {
       Swal.fire({ icon: "error", title: "Campos incompletos", text: "Por favor complete todos los campos" });
       return;
@@ -57,7 +59,7 @@ const LoginPage = () => {
         title: "¡Ingreso Exitoso!",
         text: `Bienvenido ${user.displayName || user.email}`,
         confirmButtonText: "Continuar",
-      }).then(() => navigate("/hooks"));
+      }).then(() => navigate("/sessions"));
     } catch (error) {
       Swal.fire({ icon: "error", title: "Error de autenticación", text: error.message });
     }
@@ -107,27 +109,38 @@ const LoginPage = () => {
         title: "¡Ingreso Exitoso!",
         text: `Bienvenido ${user.displayName || user.email}`,
         confirmButtonText: "Continuar",
-      }).then(() => navigate("/hooks"));
+      }).then(() => navigate("/sessions"));
 
     } catch (error) {
-      // NUEVO: manejo especial para cuenta duplicada (ej: mismo email ya registrado con Google)
+      // Ignorar silenciosamente cuando el usuario cierra la ventana
+      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+        return;
+      }
+
+      // Manejo especial para cuenta duplicada
       if (error.code === "auth/account-exists-with-different-credential") {
         Swal.fire({
           icon: "warning",
           title: "Cuenta existente",
           text: "Ya existe una cuenta con este correo usando otro método de inicio de sesión. Por favor inicia sesión con ese método.",
         });
+      } else if (error.code === "auth/operation-not-supported-in-this-environment" || error.message?.includes("404")) {
+        Swal.fire({
+          icon: "error",
+          title: "Error de configuración",
+          text: `Por favor verifica que ${provider} esté correctamente configurado en Firebase Console. Código: ${error.code}`,
+        });
       } else {
-        Swal.fire({ icon: "error", title: "Error de autenticación", text: error.message });
+        Swal.fire({ icon: "error", title: "Error de autenticación", text: error.message || error.toString() });
       }
     }
   };
   // ───────────────────────────────────────────────────────────────────────────
 
+
   return (
     <div className="flex-1 w-screen min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
       <div className="w-full max-w-md bg-gradient-to-br from-indigo-50 to-blue-100 rounded-2xl shadow-xl overflow-hidden z-10 p-8 transform transition-all relative">
-
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Iniciar Sesión</h2>
           <p className="text-gray-500 text-sm">Ingrese sus credenciales para acceder</p>
@@ -207,6 +220,7 @@ const LoginPage = () => {
           <div className="mt-6 grid grid-cols-3 gap-3">
             {/* Google */}
             <button
+              type="button"
               onClick={() => handleSocialLogin("Google")}
               className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
             >
@@ -220,6 +234,7 @@ const LoginPage = () => {
 
             {/* Facebook */}
             <button
+              type="button"
               onClick={() => handleSocialLogin("Facebook")}
               className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
             >
@@ -228,6 +243,7 @@ const LoginPage = () => {
 
             {/* MODIFICACIÓN: GitHub ahora tiene su SVG oficial en lugar de solo texto */}
             <button
+              type="button"
               onClick={() => handleSocialLogin("GitHub")}
               className="flex justify-center items-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
             >
