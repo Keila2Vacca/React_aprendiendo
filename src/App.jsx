@@ -10,6 +10,10 @@ import RegisterPage from './pages/auth/RegisterPage'
 import ForgotPage from './pages/auth/ForgotPage'
 import ResetPage from './pages/auth/ResetPage'
 
+// Sessions Page
+import SessionsPage from './pages/SessionsPage'
+import Dashboard from './pages/Dashboard'
+
 // Keila
 import UseStateEjemplo from './playground/hooks/useState/UseStateEjemplo'
 import UseReducerEjemplo from './playground/hooks/useReducer/UseReducerEjemplo'
@@ -44,6 +48,12 @@ function App() {
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/forgot-password' element={<ForgotPage />} />
         <Route path='/reset-password' element={<ResetPage />} />
+
+        {/* Dashboard Route */}
+        <Route path='/dashboard' element={<Dashboard />} />
+
+        {/* Sessions Route */}
+        <Route path='/sessions' element={<SessionsPage />} />
 
         {/* Existing Hooks Home */}
         <Route path='/hooks' element={<HomeHooks />} />
