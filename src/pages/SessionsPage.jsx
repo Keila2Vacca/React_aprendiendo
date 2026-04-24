@@ -1,13 +1,36 @@
 import { useState, useEffect, useMemo } from 'react';
-import { db } from '../firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import { db, auth } from '../firebase';
+import { collection, getDocs, query, orderBy, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { signOut } from 'firebase/auth';
 
 const SessionsPage = () => {
-  const { user } = useAuth();
+  const { user, sessionId } = useAuth();
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+
+  const handleLogout = async () => {
+    try {
+      // Actualizar la sesión con hora de salida
+      if (sessionId) {
+        const sessionRef = doc(db, "userSessions", sessionId);
+        await updateDoc(sessionRef, {
+          logoutTime: Timestamp.now(),
+          sessionDuration: Date.now() - (new Date(sessionId.split('_')[1]).getTime()),
+          status: "inactive"
+        });
+      }
+      // Cerrar sesión en Firebase
+      await signOut(auth);
+      // Redirigir al login
+      navigate('/');
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
 
   const filteredSessions = useMemo(() => {
     const search = searchTerm.toLowerCase().trim();
@@ -51,8 +74,32 @@ const SessionsPage = () => {
   if (loading) return <div className="flex justify-center items-center h-screen">Cargando...</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Registro de Sesiones</h1>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header con botones */}
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">React Hooks Playground</h1>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {}}
+              className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+              disabled
+            >
+              Ver Sesiones
+            </button>
+            <button
+              onClick={handleLogout}
+              className="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenido principal */}
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-6">Registro de Sesiones</h1>
       
       <div className="mb-4">
         <input
@@ -99,6 +146,7 @@ const SessionsPage = () => {
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );
