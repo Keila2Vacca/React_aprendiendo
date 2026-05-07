@@ -1,150 +1,210 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
-import { Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import logo from '../../assets/imagotipo.png';
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
+import { auth } from "../../firebase";
+import { Lock, Eye, EyeOff, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 
 /**
- * ResetPage component
- * Features: Form to input new password and confirm it
+ * ResetPage component – Real Firebase Auth
  */
 const ResetPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    password: "",
-    confirmPassword: "",
-  });
+  const [formData, setFormData] = useState({ password: "", confirmPassword: "" });
+  const [status, setStatus] = useState({ type: null, message: "" });
+  const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(true);
+  const [oobCode, setOobCode] = useState(null);
 
-  const handleSubmit = (e) => {
+  // Extract oobCode from URL (Firebase sends this in the reset link)
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    const code = query.get("oobCode");
+    if (code) {
+      setOobCode(code);
+      // Verify code is valid
+      verifyPasswordResetCode(auth, code)
+        .then(() => setVerifying(false))
+        .catch((error) => {
+          console.error("Invalid code:", error);
+          setStatus({ type: "error", message: "El código de restablecimiento no es válido o ha expirado." });
+          setVerifying(false);
+        });
+    } else {
+      setStatus({ type: "error", message: "No se proporcionó un código de restablecimiento válido." });
+      setVerifying(false);
+    }
+  }, [location]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setStatus({ type: null, message: "" });
     
     if (!formData.password || !formData.confirmPassword) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Campos incompletos',
-        text: 'Por favor complete todos los campos',
-      });
+      setStatus({ type: "error", message: "Por favor complete todos los campos." });
       return;
     }
 
     if (formData.password.length < 6) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Contraseña débil',
-        text: 'La contraseña debe tener al menos 6 caracteres.',
-      });
+      setStatus({ type: "error", message: "La contraseña debe tener al menos 6 caracteres." });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Contraseñas no coinciden',
-        text: 'Asegúrese de que ambas contraseñas sean iguales.',
-      });
+      setStatus({ type: "error", message: "Las contraseñas no coinciden." });
       return;
     }
 
-    Swal.fire({
-      icon: 'success',
-      title: '¡Contraseña Restablecida!',
-      html: `La nueva contraseña capturada es:<br/> <b>${formData.password}</b>`,
-      confirmButtonText: 'Iniciar Sesión'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        navigate("/");
-      }
-    });
+    setLoading(true);
+    try {
+      await confirmPasswordReset(auth, oobCode, formData.password);
+      setStatus({ type: "success", message: "¡Contraseña restablecida con éxito! Ya puede iniciar sesión." });
+      setTimeout(() => navigate("/login"), 3000);
+    } catch (error) {
+      console.error("Reset error:", error);
+      setStatus({ type: "error", message: "Ocurrió un error al restablecer la contraseña. Inténtelo de nuevo." });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 bg-gradient-to-tl from-rose-50 to-orange-100 relative overflow-hidden">
-      
-      {/* Decorative background shapes */}
-      <div className="absolute top-1/4 left-10 w-64 h-64 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-      <div className="absolute bottom-10 right-10 w-72 h-72 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
+  if (verifying) {
+    return (
+      <div className="bg-cootrans" style={{ width: "100%", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "#fff", textAlign: "center" }}>
+          <div style={{ width: 40, height: 40, border: "3px solid rgba(255,255,255,.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
+          <p>Verificando código...</p>
+        </div>
+      </div>
+    );
+  }
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden z-10 p-8">
-        
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Restablecer Contraseña</h2>
-          <p className="text-gray-500 text-sm">
-            Ingrese su nueva contraseña.
+  return (
+    <div
+      className="bg-cootrans"
+      style={{
+        width: "100%",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem 1rem",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Decorative blobs */}
+      <div style={{ position: "absolute", top: "-100px", right: "-100px", width: "350px", height: "350px", borderRadius: "50%", background: "rgba(255,255,255,.07)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "-80px", left: "-80px", width: "280px", height: "280px", borderRadius: "50%", background: "rgba(255,255,255,.05)", pointerEvents: "none" }} />
+
+      <div className="auth-card animate-fade-up">
+        <div style={{ textAlign: "center", marginBottom: "1.75rem" }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: "50%",
+            background: "linear-gradient(135deg, var(--green-mid), var(--green-dark))",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 1rem", boxShadow: "0 4px 20px rgba(45,106,53,.3)",
+          }}>
+            <img src={logo} alt="Logo" style={{ width: "70%", height: "70%" }} />
+          </div>
+          <h2 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--green-dark)", margin: "0 0 .35rem" }}>
+            Restablecer Contraseña
+          </h2>
+          <p style={{ color: "var(--gray-600)", fontSize: ".875rem", margin: 0 }}>
+            Ingrese su nueva contraseña para asegurar su cuenta.
           </p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
-              Nueva Contraseña
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            </div>
+        {status.type && (
+          <div style={{ 
+            padding: "1rem", 
+            borderRadius: "10px", 
+            marginBottom: "1.5rem", 
+            display: "flex", 
+            alignItems: "flex-start", 
+            gap: ".75rem",
+            fontSize: ".875rem",
+            background: status.type === "success" ? "#dcfce7" : "#fee2e2",
+            color: status.type === "success" ? "#166534" : "#991b1b",
+            border: `1px solid ${status.type === "success" ? "#bbf7d0" : "#fecaca"}`
+          }}>
+            {status.type === "success" ? <CheckCircle2 size={18} style={{ flexShrink: 0 }} /> : <AlertCircle size={18} style={{ flexShrink: 0 }} />}
+            <span>{status.message}</span>
           </div>
+        )}
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1">
-              Confirmar Contraseña
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
+        {status.type !== "success" && !verifying && oobCode && (
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+            {/* New Password */}
+            <div>
+              <label htmlFor="password" style={{ display: "block", fontSize: ".875rem", fontWeight: 600, color: "var(--gray-800)", marginBottom: ".4rem" }}>
+                Nueva Contraseña
+              </label>
+              <div style={{ position: "relative" }}>
+                <Lock size={17} style={{ position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }} />
+                <input
+                  id="password"
+                  className="form-input"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  style={{ paddingRight: "3rem" }}
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: "absolute", right: ".85rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--gray-400)", display: "flex" }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-              <input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-colors"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-              >
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            className="w-full bg-rose-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-rose-700 focus:ring-4 focus:ring-rose-200 transition-all shadow-md mt-4"
-          >
-            Actualizar Contraseña
-          </button>
-        </form>
+            {/* Confirm Password */}
+            <div>
+              <label htmlFor="confirmPassword" style={{ display: "block", fontSize: ".875rem", fontWeight: 600, color: "var(--gray-800)", marginBottom: ".4rem" }}>
+                Confirmar Contraseña
+              </label>
+              <div style={{ position: "relative" }}>
+                <Lock size={17} style={{ position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }} />
+                <input
+                  id="confirmPassword"
+                  className="form-input"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  style={{ paddingRight: "3rem" }}
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ position: "absolute", right: ".85rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--gray-400)", display: "flex" }}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
 
-        <div className="mt-6 text-center">
-          <Link to="/" className="inline-flex items-center text-sm font-semibold text-rose-600 hover:text-rose-500 transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Volver a Iniciar Sesión
+            <button type="submit" className="btn-green" style={{ marginTop: ".5rem" }} disabled={loading}>
+              {loading ? "Actualizando..." : "Actualizar Contraseña"}
+            </button>
+          </form>
+        )}
+
+        <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+          <Link to="/login" style={{ display: "inline-flex", alignItems: "center", gap: ".4rem", color: "var(--green-main)", fontWeight: 700, fontSize: ".875rem" }}>
+            <ArrowLeft size={16} /> Volver a Iniciar Sesión
           </Link>
         </div>
-
       </div>
     </div>
   );
