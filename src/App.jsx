@@ -2,6 +2,7 @@ import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 // Home
+import LandingPage from './pages/LandingPage'
 import HomeHooks from './playground/HomeHooks'
 
 // Auth Pages
@@ -10,7 +11,7 @@ import RegisterPage from './pages/auth/RegisterPage'
 import ForgotPage from './pages/auth/ForgotPage'
 import ResetPage from './pages/auth/ResetPage'
 
-// Sessions Page
+// Pages
 import SessionsPage from './pages/SessionsPage'
 import Dashboard from './pages/Dashboard'
 
@@ -21,7 +22,7 @@ import UseEffectEjemplo from './playground/hooks/useEffect/UseEffectEjemplo'
 import UseLayoutEffectEjemplo from './playground/hooks/useLayoutEffect/UseLayoutEffectEjemplo'
 import UseDebugValueEjemplo from './playground/hooks/useDebugValue/UseDebugValueEjemplo'
 
-// // Karen
+// Karen
 import UseContextEjemplo from './playground/Hooks/UseContext/UseContextEjemplo'
 import UseTransitionEjemplo from './playground/Hooks/UseTransition/UseTransitionEjemplo'
 import UseImperativeHandleEjemplo from './playground/Hooks/UseImperativeHandle/UseImperativeHandleEjemplo'
@@ -30,8 +31,7 @@ import UseRefEjemplo from './playground/Hooks/UseRef/UseRefEjemplo'
 import UseOptimisticEjemplo from './playground/Hooks/UseOptimistic/UseOptimisticEjemplo'
 import UseFormStatusEjemplo from './playground/Hooks/UseFormStatus/UseFormStatusEjemplo'
 
-
-// // Gerardo
+// Gerardo
 import UseSyncExternalStoreEjemplo from './playground/Hooks/UseSyncExternalStore/UseSyncExternalStore'
 import UseIdEjemplo from './playground/Hooks/UseId/useId'
 import UseMemoEjemplo from './playground/Hooks/UseMemo/UseMemo'
@@ -43,8 +43,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Main Routes */}
+        <Route path='/' element={<LandingPage />} />
+        
         {/* Auth Routes */}
-        <Route path='/' element={<LoginPage />} />
+        <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/forgot-password' element={<ForgotPage />} />
         <Route path='/reset-password' element={<ResetPage />} />
@@ -74,8 +77,7 @@ function App() {
         <Route path='/HookuseOptimistic' element={<UseOptimisticEjemplo />} />
         <Route path='/HookuseFormStatus' element={<UseFormStatusEjemplo />} />
 
-
-
+        {/* Gerardo */}
         <Route path='/HookuseSyncExternalStore' element={<UseSyncExternalStoreEjemplo />} />
         <Route path='/HookuseId' element={<UseIdEjemplo />} />
         <Route path='/HookuseMemo' element={<UseMemoEjemplo />} />
