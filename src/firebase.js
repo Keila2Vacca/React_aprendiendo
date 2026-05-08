@@ -34,6 +34,8 @@ export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 //login con facebook
 export const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope("email");
+facebookProvider.addScope("public_profile");
 
 //exportar al proveedor de autenticación de GitHub
 export const githubProvider = new GithubAuthProvider();

@@ -14,6 +14,7 @@ import ResetPage from './pages/auth/ResetPage'
 // Pages
 import SessionsPage from './pages/SessionsPage'
 import Dashboard from './pages/Dashboard'
+import DeleteDataPage from './pages/DeleteDataPage'
 
 // Keila
 import UseStateEjemplo from './playground/hooks/useState/UseStateEjemplo'
@@ -54,6 +55,9 @@ function App() {
 
         {/* Dashboard Route */}
         <Route path='/dashboard' element={<Dashboard />} />
+
+        {/* Facebook Compliance Route */}
+        <Route path='/delete-data' element={<DeleteDataPage />} />
 
         {/* Sessions Route */}
         <Route path='/sessions' element={<SessionsPage />} />
