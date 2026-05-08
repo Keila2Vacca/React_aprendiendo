@@ -67,20 +67,27 @@ const LoginPage = () => {
   // ── MODIFICACIÓN PRINCIPAL ──────────────────────────────────────────────────
   const handleSocialLogin = async (provider) => {
     setError("");
+    setLoading(true);
     let authProvider;
 
     switch (provider) {
       case "Google":
         authProvider = new GoogleAuthProvider();
+        authProvider.addScope("email");
+        authProvider.addScope("profile");
         break;
       case "Facebook":
         authProvider = new FacebookAuthProvider();
+        // Scopes necesarios para obtener email y nombre del usuario
+        authProvider.addScope("email");
+        authProvider.addScope("public_profile");
         break;
       case "GitHub":
         authProvider = new GithubAuthProvider();
         authProvider.addScope("user:email");
         break;
       default:
+        setLoading(false);
         return;
     }
 
@@ -113,25 +120,22 @@ const LoginPage = () => {
         status: "active",
       });
 
-      // Actualizar perfil de usuario persistente
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        name: user.displayName || user.email?.split("@")[0] || "Usuario",
-        email: user.email,
-        photoURL: user.photoURL || null,
-        lastLogin: serverTimestamp(),
-        authMethod: provider.toLowerCase(),
-      }, { merge: true });
-
       setSessionId(sessionId, loginTime);
       navigate("/dashboard");
     } catch (error) {
-      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") return;
-      if (error.code === "auth/account-exists-with-different-credential") {
-        setError("Ya existe una cuenta con este correo usando otro método de inicio de sesión.");
+      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+        // Usuario cerró el popup — no mostrar error
+      } else if (error.code === "auth/account-exists-with-different-credential") {
+        setError("Ya existe una cuenta con este correo registrada con otro método (Google, GitHub o contraseña). Por favor inicia sesión con ese método.");
+      } else if (error.code === "auth/operation-not-allowed") {
+        setError("El inicio de sesión con " + provider + " no está habilitado. Contacte al administrador.");
+      } else if (error.code === "auth/popup-blocked") {
+        setError("El navegador bloqueó la ventana emergente. Por favor permite ventanas emergentes para este sitio.");
       } else {
         setError(error.message || "Error al iniciar sesión con " + provider);
       }
+    } finally {
+      setLoading(false);
     }
   };
   // ───────────────────────────────────────────────────────────────────────────

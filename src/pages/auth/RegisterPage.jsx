@@ -94,19 +94,26 @@ const RegisterPage = () => {
 
   const handleSocialLogin = async (provider) => {
     setStatus({ type: null, message: "" });
+    setLoading(true);
     let authProvider;
     switch (provider) {
       case "Google":
         authProvider = new GoogleAuthProvider();
+        authProvider.addScope("email");
+        authProvider.addScope("profile");
         break;
       case "Facebook":
         authProvider = new FacebookAuthProvider();
+        // Scopes necesarios para obtener email y nombre del usuario
+        authProvider.addScope("email");
+        authProvider.addScope("public_profile");
         break;
       case "GitHub":
         authProvider = new GithubAuthProvider();
         authProvider.addScope("user:email");
         break;
       default:
+        setLoading(false);
         return;
     }
 
@@ -142,13 +149,18 @@ const RegisterPage = () => {
       navigate("/dashboard");
     } catch (error) {
       if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
-        return;
-      }
-      if (error.code === "auth/account-exists-with-different-credential") {
-        setStatus({ type: "error", message: "Ya existe una cuenta con este correo usando otro método de inicio de sesión." });
+        // Usuario cerró el popup — no mostrar error
+      } else if (error.code === "auth/account-exists-with-different-credential") {
+        setStatus({ type: "error", message: "Ya existe una cuenta con este correo registrada con otro método (Google, GitHub o contraseña). Por favor inicia sesión con ese método." });
+      } else if (error.code === "auth/operation-not-allowed") {
+        setStatus({ type: "error", message: "El registro con " + provider + " no está habilitado. Contacte al administrador." });
+      } else if (error.code === "auth/popup-blocked") {
+        setStatus({ type: "error", message: "El navegador bloqueó la ventana emergente. Por favor permite ventanas emergentes para este sitio." });
       } else {
         setStatus({ type: "error", message: error.message || "Error al autenticar con " + provider });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -329,7 +341,7 @@ const RegisterPage = () => {
 
         <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: ".875rem", color: "var(--gray-600)" }}>
           ¿Ya tiene una cuenta?{" "}
-          <Link to="/login" style={{ color: "var(--green-main)", fontWeight: 700 }}>
+          <Link to="/" style={{ color: "var(--green-main)", fontWeight: 700 }}>
             Iniciar sesión
           </Link>
         </p>
