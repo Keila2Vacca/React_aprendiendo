@@ -89,9 +89,20 @@ const LoginPage = () => {
 
       const sessionId = `${user.uid}_${Date.now()}`;
       const loginTime = new Date();
+      
+      // Guardar perfil de usuario persistente
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName || user.email?.split("@")[0] || "Usuario",
+        email: user.email || "",
+        photoURL: user.photoURL || null,
+        lastLogin: serverTimestamp(),
+        authMethod: provider.toLowerCase(),
+      }, { merge: true });
+
       await setDoc(doc(db, "userSessions", sessionId), {
         userId: user.uid,
-        userEmail: user.email,
+        userEmail: user.email || "",
         userName: user.displayName || user.email?.split("@")[0] || "Usuario",
         userPhoto: user.photoURL || null,
         loginTime: serverTimestamp(),
@@ -115,7 +126,11 @@ const LoginPage = () => {
       navigate("/dashboard");
     } catch (error) {
       if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") return;
-      setError(error.message || "Error al iniciar sesión con " + provider);
+      if (error.code === "auth/account-exists-with-different-credential") {
+        setError("Ya existe una cuenta con este correo usando otro método de inicio de sesión.");
+      } else {
+        setError(error.message || "Error al iniciar sesión con " + provider);
+      }
     }
   };
   // ───────────────────────────────────────────────────────────────────────────

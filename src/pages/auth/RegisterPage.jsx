@@ -80,7 +80,7 @@ const RegisterPage = () => {
       });
 
       setStatus({ type: "success", message: "¡Cuenta creada con éxito! Redirigiendo..." });
-      setTimeout(() => navigate("/login"), 2000);
+      setTimeout(() => navigate("/"), 2000);
     } catch (error) {
       console.error("Register error:", error);
       let message = "Error al crear la cuenta.";
@@ -95,22 +95,40 @@ const RegisterPage = () => {
     setStatus({ type: null, message: "" });
     let authProvider;
     switch (provider) {
-      case "Google":   authProvider = new GoogleAuthProvider();   break;
-      case "Facebook": authProvider = new FacebookAuthProvider(); break;
-      case "GitHub":   authProvider = new GithubAuthProvider();   break;
-      default: return;
+      case "Google":
+        authProvider = new GoogleAuthProvider();
+        break;
+      case "Facebook":
+        authProvider = new FacebookAuthProvider();
+        break;
+      case "GitHub":
+        authProvider = new GithubAuthProvider();
+        authProvider.addScope("user:email");
+        break;
+      default:
+        return;
     }
 
     try {
       const result = await signInWithPopup(auth, authProvider);
       const user = result.user;
 
+      // Guardar perfil de usuario persistente
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName || user.email?.split("@")[0] || "Usuario",
+        email: user.email || "",
+        photoURL: user.photoURL || null,
+        createdAt: serverTimestamp(),
+        authMethod: provider.toLowerCase(),
+      }, { merge: true });
+
       const sessionId = `${user.uid}_${Date.now()}`;
       const loginTime = new Date();
       await setDoc(doc(db, "userSessions", sessionId), {
         userId: user.uid,
-        userEmail: user.email,
-        userName: user.displayName || user.email.split("@")[0],
+        userEmail: user.email || "",
+        userName: user.displayName || user.email?.split("@")[0] || "Usuario",
         userPhoto: user.photoURL || null,
         loginTime: serverTimestamp(),
         logoutTime: null,
@@ -119,21 +137,17 @@ const RegisterPage = () => {
         status: "active",
       });
 
-      // Guardar perfil de usuario persistente
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        name: user.displayName || user.email.split("@")[0],
-        email: user.email,
-        photoURL: user.photoURL || null,
-        createdAt: serverTimestamp(),
-        authMethod: provider.toLowerCase(),
-      }, { merge: true });
-
       setSessionId(sessionId, loginTime);
       navigate("/dashboard");
     } catch (error) {
-      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") return;
-      setStatus({ type: "error", message: "Error al autenticar con " + provider });
+      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+        return;
+      }
+      if (error.code === "auth/account-exists-with-different-credential") {
+        setStatus({ type: "error", message: "Ya existe una cuenta con este correo usando otro método de inicio de sesión." });
+      } else {
+        setStatus({ type: "error", message: error.message || "Error al autenticar con " + provider });
+      }
     }
   };
 
