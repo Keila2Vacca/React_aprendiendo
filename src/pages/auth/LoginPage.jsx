@@ -91,9 +91,20 @@ const LoginPage = () => {
 
       const sessionId = `${user.uid}_${Date.now()}`;
       const loginTime = new Date();
+      
+      // Guardar perfil de usuario persistente
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName || user.email?.split("@")[0] || "Usuario",
+        email: user.email || "",
+        photoURL: user.photoURL || null,
+        lastLogin: serverTimestamp(),
+        authMethod: provider.toLowerCase(),
+      }, { merge: true });
+
       await setDoc(doc(db, "userSessions", sessionId), {
         userId: user.uid,
-        userEmail: user.email,
+        userEmail: user.email || "",
         userName: user.displayName || user.email?.split("@")[0] || "Usuario",
         loginTime: serverTimestamp(),
         logoutTime: null,
@@ -107,7 +118,7 @@ const LoginPage = () => {
       Swal.fire({
         icon: "success",
         title: "¡Ingreso Exitoso!",
-        text: `Bienvenido ${user.displayName || user.email}`,
+        text: `Bienvenido ${user.displayName || user.email || "Usuario"}`,
         confirmButtonText: "Continuar",
       }).then(() => navigate("/sessions"));
 

@@ -131,6 +131,7 @@ const RegisterPage = () => {
         break;
       case 'GitHub':
         authProvider = new GithubAuthProvider();
+        authProvider.addScope("user:email");
         break;
       default:
         return;
@@ -140,13 +141,23 @@ const RegisterPage = () => {
       const result = await signInWithPopup(auth, authProvider);
       const user = result.user;
 
+      // Guardar perfil de usuario persistente
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName || user.email?.split("@")[0] || "Usuario GitHub",
+        email: user.email || "",
+        photoURL: user.photoURL || null,
+        createdAt: serverTimestamp(),
+        authMethod: provider.toLowerCase(),
+      }, { merge: true });
+
       // Registrar sesión en Firestore
       const sessionId = `${user.uid}_${Date.now()}`;
       const loginTime = new Date();
       await setDoc(doc(db, "userSessions", sessionId), {
         userId: user.uid,
-        userEmail: user.email,
-        userName: user.displayName || user.email.split('@')[0],
+        userEmail: user.email || "",
+        userName: user.displayName || user.email?.split('@')[0] || "Usuario GitHub",
         loginTime: serverTimestamp(),
         logoutTime: null,
         sessionDuration: null,
@@ -165,11 +176,23 @@ const RegisterPage = () => {
         navigate('/dashboard');
       });
     } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error de autenticación',
-        text: error.message,
-      });
+      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
+        return;
+      }
+      
+      if (error.code === "auth/account-exists-with-different-credential") {
+        Swal.fire({
+          icon: "warning",
+          title: "Cuenta existente",
+          text: "Ya existe una cuenta con este correo usando otro método. Por favor inicie sesión con ese método.",
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de autenticación',
+          text: error.message || "Error al autenticar",
+        });
+      }
     }
   };
   
