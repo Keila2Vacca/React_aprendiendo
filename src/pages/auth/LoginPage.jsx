@@ -13,10 +13,6 @@ import { auth, db } from "../../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "../../context/AuthContext";
 
-/**
- * LoginPage component
- * Features: Email/password login, social mock logins, sweetalert capture
- */
 const LoginPage = () => {
   const navigate = useNavigate();
   const { setSessionId } = useAuth();
@@ -36,13 +32,9 @@ const LoginPage = () => {
 
     setLoading(true);
     try {
-      const email = formData.email.trim().toLowerCase();
-      const password = formData.password;
-      console.log('Intentando login con:', email);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
-      // Registrar sesión en Firestore
       const sessionId = `${user.uid}_${Date.now()}`;
       const loginTime = new Date();
       await setDoc(doc(db, "userSessions", sessionId), {
@@ -54,7 +46,7 @@ const LoginPage = () => {
         logoutTime: null,
         sessionDuration: null,
         authMethod: "email",
-        status: "active"
+        status: "active",
       });
 
       setSessionId(sessionId, loginTime);
@@ -71,17 +63,19 @@ const LoginPage = () => {
     }
   };
 
+  // ── MODIFICACIÓN PRINCIPAL ──────────────────────────────────────────────────
   const handleSocialLogin = async (provider) => {
     setError("");
     let authProvider;
+
     switch (provider) {
-      case 'Google':
+      case "Google":
         authProvider = new GoogleAuthProvider();
         break;
-      case 'Facebook':
+      case "Facebook":
         authProvider = new FacebookAuthProvider();
         break;
-      case 'GitHub':
+      case "GitHub":
         authProvider = new GithubAuthProvider();
         authProvider.addScope("user:email");
         break;
@@ -93,7 +87,6 @@ const LoginPage = () => {
       const result = await signInWithPopup(auth, authProvider);
       const user = result.user;
 
-      // Registrar sesión en Firestore
       const sessionId = `${user.uid}_${Date.now()}`;
       const loginTime = new Date();
       await setDoc(doc(db, "userSessions", sessionId), {
@@ -105,7 +98,7 @@ const LoginPage = () => {
         logoutTime: null,
         sessionDuration: null,
         authMethod: provider.toLowerCase(),
-        status: "active"
+        status: "active",
       });
 
       // Actualizar perfil de usuario persistente
@@ -125,6 +118,8 @@ const LoginPage = () => {
       setError(error.message || "Error al iniciar sesión con " + provider);
     }
   };
+  // ───────────────────────────────────────────────────────────────────────────
+
 
   return (
     <div

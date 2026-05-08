@@ -10,6 +10,8 @@
 Sistema web SPA (Single Page Application) para la gestión y venta de pasajes intermunicipales de la **Cooperativa de Transporte Hacaritama** (Ábrego, Norte de Santander), desarrollado con React.
  prueba
 
+prueba de bloqueo de main
+
 ---
 
 ## Descripción
@@ -155,7 +157,7 @@ git push origin feature/nombre-descriptivo
 |-----|--------|--------|--------|-----------------------|
 | **Product Owner** | Karen Marcela Bayona Moreno | 192215 | [@KarenMarcela](https://github.com/KarenMarcela) | `RegisterPage` |
 | **Scrum Master** | Keila Nathaly Vacca Bacca | 192221 | [@Keila2Vacca](https://github.com/Keila2Vacca) | `LoginPage` |
-| **Dev Team** | Gerardo | https://github.com/Gerard176 |  | `ForgotPage` y `ResetPage` |
+| **Dev Team** | Gerardo Alejandro Duarte Rodríguez |192055 | [@Gerard176](https://github.com/Gerard176) | `ForgotPage` y `ResetPage` |
 
 ---
 

@@ -15,6 +15,7 @@ import { auth, db } from "../../firebase";
 import { useAuth } from "../../context/AuthContext";
 
 const RegisterPage = () => {
+  const { setSessionId } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -101,7 +102,7 @@ const RegisterPage = () => {
     }
 
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, authProvider);
       const user = result.user;
 
       const sessionId = `${user.uid}_${Date.now()}`;
