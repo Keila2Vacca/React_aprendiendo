@@ -85,7 +85,7 @@ const Dashboard = () => {
           </button>
         </nav>
 
-        {/* User + Logout */}
+        {/* User + Logout con fpto de perfil */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,.15)', paddingTop: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.5rem .75rem', marginBottom: '.75rem' }}>
             <div style={{
