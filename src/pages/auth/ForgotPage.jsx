@@ -1,103 +1,129 @@
 import { useState } from "react";
+import logo from '../../assets/imagotipo.png';
 import { Link, useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
-import { Mail, ArrowLeft } from "lucide-react";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../../firebase";
+import { Mail, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
 
 /**
- * ForgotPage component
- * Features: Request email to send recovery token
+ * ForgotPage component – Real Firebase Auth
  */
 const ForgotPage = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [status, setStatus] = useState({ type: null, message: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setStatus({ type: null, message: "" });
+
     if (!email) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Campo requerido',
-        text: 'Por favor ingrese su correo electrónico.',
-      });
+      setStatus({ type: "error", message: "Por favor ingrese su correo electrónico." });
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Correo inválido',
-        text: 'Por favor ingrese un correo válido.',
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setStatus({ 
+        type: "success", 
+        message: "Enlace enviado. Por favor revise su bandeja de entrada (y la carpeta de spam)." 
       });
-      return;
+      setEmail("");
+    } catch (error) {
+      let errorMessage = "Ocurrió un error al enviar el correo.";
+      if (error.code === "auth/user-not-found") errorMessage = "No existe una cuenta con este correo.";
+      if (error.code === "auth/invalid-email") errorMessage = "El correo electrónico no es válido.";
+      setStatus({ type: "error", message: errorMessage });
+    } finally {
+      setLoading(false);
     }
-
-    Swal.fire({
-      icon: 'success',
-      title: 'Enlace enviado',
-      text: `Se ha simulado el envío de recuperación al correo: ${email}`,
-      confirmButtonText: 'Ir a restablecer contraseña'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        navigate("/reset-password");
-      }
-    });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 bg-gradient-to-tr from-green-50 to-teal-100 relative overflow-hidden">
-      
-      {/* Decorative background shapes */}
-      <div className="absolute top-0 left-0 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+    <div
+      className="bg-cootrans"
+      style={{
+        width: "100%",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem 1rem",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Decorative blobs */}
+      <div style={{ position: "absolute", top: "-100px", right: "-100px", width: "350px", height: "350px", borderRadius: "50%", background: "rgba(255,255,255,.07)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "-80px", left: "-80px", width: "280px", height: "280px", borderRadius: "50%", background: "rgba(255,255,255,.05)", pointerEvents: "none" }} />
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden z-10 p-8">
-        
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Recuperar Contraseña</h2>
-          <p className="text-gray-500 text-sm">
-            Ingrese su correo electrónico y simularemos el envío de instrucciones.
+      <div className="auth-card animate-fade-up">
+        <div style={{ textAlign: "center", marginBottom: "1.75rem" }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: "50%",
+            background: "linear-gradient(135deg, var(--green-mid), var(--green-dark))",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 1rem", boxShadow: "0 4px 20px rgba(45,106,53,.3)",
+          }}>
+            <img src={logo} alt="Logo" style={{ width: "70%", height: "70%" }} />
+          </div>
+          <h2 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--green-dark)", margin: "0 0 .35rem" }}>
+            Recuperar Contraseña
+          </h2>
+          <p style={{ color: "var(--gray-600)", fontSize: ".875rem", margin: 0 }}>
+            Ingrese su correo electrónico para recibir un enlace de recuperación.
           </p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
+        {status.type && (
+          <div style={{ 
+            padding: "1rem", 
+            borderRadius: "10px", 
+            marginBottom: "1.5rem", 
+            display: "flex", 
+            alignItems: "flex-start", 
+            gap: ".75rem",
+            fontSize: ".875rem",
+            background: status.type === "success" ? "#dcfce7" : "#fee2e2",
+            color: status.type === "success" ? "#166534" : "#991b1b",
+            border: `1px solid ${status.type === "success" ? "#bbf7d0" : "#fecaca"}`
+          }}>
+            {status.type === "success" ? <CheckCircle2 size={18} style={{ flexShrink: 0 }} /> : <AlertCircle size={18} style={{ flexShrink: 0 }} />}
+            <span>{status.message}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
+            <label htmlFor="email" style={{ display: "block", fontSize: ".875rem", fontWeight: 600, color: "var(--gray-800)", marginBottom: ".4rem" }}>
               Correo Electrónico
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
-              </div>
+            <div style={{ position: "relative" }}>
+              <Mail size={17} style={{ position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }} />
               <input
                 id="email"
+                className="form-input"
                 type="email"
                 placeholder="correo@ejemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-colors"
                 required
+                disabled={loading}
               />
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 focus:ring-4 focus:ring-teal-200 transition-all shadow-md mt-4"
-          >
-            Enviar Instrucciones
+          <button type="submit" className="btn-green" style={{ marginTop: ".5rem" }} disabled={loading}>
+            {loading ? "Enviando..." : "Enviar Enlace"}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <Link to="/" className="inline-flex items-center text-sm font-semibold text-teal-600 hover:text-teal-500 transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Volver a Iniciar Sesión
+        <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+          <Link to="/login" style={{ display: "inline-flex", alignItems: "center", gap: ".4rem", color: "var(--green-main)", fontWeight: 700, fontSize: ".875rem" }}>
+            <ArrowLeft size={16} /> Volver a Iniciar Sesión
           </Link>
         </div>
-
       </div>
     </div>
   );
