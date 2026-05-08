@@ -341,7 +341,7 @@ const RegisterPage = () => {
 
         <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: ".875rem", color: "var(--gray-600)" }}>
           ¿Ya tiene una cuenta?{" "}
-          <Link to="/" style={{ color: "var(--green-main)", fontWeight: 700 }}>
+          <Link to="/login" style={{ color: "var(--green-main)", fontWeight: 700 }}>
             Iniciar sesión
           </Link>
         </p>
