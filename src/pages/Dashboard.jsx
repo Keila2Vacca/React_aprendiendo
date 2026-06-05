@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../hooks/useUserData';
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { LayoutDashboard, TableProperties, LogOut, Bus, Users, Clock, Ticket } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Bus, Users, Clock, Ticket, ChevronDown, Plus } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -13,6 +13,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [ticketCount, setTicketCount] = useState(0);
   const [sessionsCount, setSessionsCount] = useState(0);
+  const [expandedMenu, setExpandedMenu] = useState(false);
 
   const loading = authLoading || dataLoading;
 
@@ -94,29 +95,69 @@ const Dashboard = () => {
             <LayoutDashboard size={18} /> Dashboard
           </button>
 
-          <button
-            id="nav-book-ticket"
-            className="sidebar-link"
-            onClick={() => navigate('/tickets/new')}
-          >
+          <Link to="/tickets/new" className="sidebar-link">
             <Ticket size={18} /> Reservar Pasaje
-          </button>
+          </Link>
 
-          <button
-            id="nav-book-ticket"
-            className="sidebar-link"
-            onClick={() => navigate('/tickets/new')}
-          >
-            <Ticket size={18} /> Reservar Pasaje
-          </button>
-
-          <button
-            id="nav-tickets"
-            className="sidebar-link"
-            onClick={() => navigate('/tickets')}
-          >
+          <Link to="/tickets" className="sidebar-link">
             <Bus size={18} /> Ver Mis Pasajes
+          </Link>
+
+          {/* Menú desplegable para Conductores */}
+          <button
+            onClick={() => setExpandedMenu(!expandedMenu)}
+            className="sidebar-link"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: expandedMenu ? 'rgba(255,255,255,.1)' : 'transparent',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Users size={18} /> Conductores
+            </div>
+            <ChevronDown
+              size={16}
+              style={{
+                transform: expandedMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease',
+              }}
+            />
           </button>
+
+          {expandedMenu && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
+              <Link
+                to="/drivers/new"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Plus size={16} /> Agregar Conductor
+              </Link>
+              <Link
+                to="/drivers"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Users size={16} /> Listado de Conductores
+              </Link>
+              <Link
+                to="/drivers"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Users size={16} /> Editar Conductores
+              </Link>
+              <Link
+                to="/drivers"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Users size={16} /> Ver
+              </Link>
+            </div>
+          )}
 
           <button
             id="nav-sessions"
