@@ -88,7 +88,7 @@ Sistema de autenticación mediante Google usando Firebase Authentication. Este m
 
 ### Paso 2: Configurar Reglas de Firestore
 
-Asegúrate de que los usuarios autenticados puedan guardar sus datos de sesión:
+Asegúrate de que los usuarios autenticados puedan guardar sus datos de sesión y tickets:
 
 ```firestore
 rules_version = '2';
@@ -99,6 +99,17 @@ service cloud.firestore {
     }
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
+    }
+    match /tickets/{ticketId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    match /rutas/{rutaId} {
+      allow read: if request.auth != null;
+    }
+    match /viajes/{viajeId} {
+      allow read: if request.auth != null;
     }
   }
 }

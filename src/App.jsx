@@ -40,6 +40,16 @@ import UseCallbackEjemplo from './playground/Hooks/UseCallback/UseCallback'
 import UseInsertionEffectEjemplo from './playground/Hooks/UseInsertionEffect/UseInsertionEffect'
 import UseActionStateEjemplo from './playground/Hooks/UseActionState/UseActionState'
 
+// Auth wrappers
+import ProtectedRoute from './components/ProtectedRoute'
+import PublicRoute from './components/PublicRoute'
+
+// Tickets CRUD Pages
+import TicketsListPage from './pages/tickets/TicketsListPage'
+import BookTicketPage from './pages/tickets/BookTicketPage'
+import EditTicketPage from './pages/tickets/EditTicketPage'
+import ViewTicketPage from './pages/tickets/ViewTicketPage'
+
 function App() {
   return (
     <BrowserRouter>
@@ -48,19 +58,65 @@ function App() {
         <Route path='/' element={<LandingPage />} />
         
         {/* Auth Routes */}
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/register' element={<RegisterPage />} />
-        <Route path='/forgot-password' element={<ForgotPage />} />
-        <Route path='/reset-password' element={<ResetPage />} />
+        <Route path='/login' element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        } />
+        <Route path='/register' element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        } />
+        <Route path='/forgot-password' element={
+          <PublicRoute>
+            <ForgotPage />
+          </PublicRoute>
+        } />
+        <Route path='/reset-password' element={
+          <PublicRoute>
+            <ResetPage />
+          </PublicRoute>
+        } />
 
         {/* Dashboard Route */}
-        <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='/dashboard' element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* Tickets CRUD Routes */}
+        <Route path='/tickets' element={
+          <ProtectedRoute>
+            <TicketsListPage />
+          </ProtectedRoute>
+        } />
+        <Route path='/tickets/new' element={
+          <ProtectedRoute>
+            <BookTicketPage />
+          </ProtectedRoute>
+        } />
+        <Route path='/tickets/edit/:id' element={
+          <ProtectedRoute>
+            <EditTicketPage />
+          </ProtectedRoute>
+        } />
+        <Route path='/tickets/view/:id' element={
+          <ProtectedRoute>
+            <ViewTicketPage />
+          </ProtectedRoute>
+        } />
 
         {/* Facebook Compliance Route */}
         <Route path='/delete-data' element={<DeleteDataPage />} />
 
         {/* Sessions Route */}
-        <Route path='/sessions' element={<SessionsPage />} />
+        <Route path='/sessions' element={
+          <ProtectedRoute>
+            <SessionsPage />
+          </ProtectedRoute>
+        } />
 
         {/* Existing Hooks Home */}
         <Route path='/hooks' element={<HomeHooks />} />

@@ -6,7 +6,7 @@ import { collection, getDocs, query, orderBy, updateDoc, doc, Timestamp } from '
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../hooks/useUserData';
 import { signOut } from 'firebase/auth';
-import { LayoutDashboard, TableProperties, LogOut, Bus, Search, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Bus, Search, ArrowLeft, Ticket } from 'lucide-react';
 
 const SessionsPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -107,6 +107,14 @@ const SessionsPage = () => {
 
           <button id="nav-dashboard" className="sidebar-link" onClick={() => navigate('/dashboard')}>
             <LayoutDashboard size={18} /> Dashboard
+          </button>
+
+          <button id="nav-book-ticket" className="sidebar-link" onClick={() => navigate('/tickets/new')}>
+            <Ticket size={18} /> Reservar Pasaje
+          </button>
+
+          <button id="nav-tickets" className="sidebar-link" onClick={() => navigate('/tickets')}>
+            <Bus size={18} /> Mis Pasajes
           </button>
 
           <button id="nav-sessions" className="sidebar-link active" onClick={() => navigate('/sessions')}>
