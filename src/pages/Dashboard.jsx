@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
-import logo from '../assets/imagotipo.png';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../hooks/useUserData';
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { LayoutDashboard, TableProperties, LogOut, Bus, Users, Clock, Ticket } from 'lucide-react';
+import { LayoutDashboard, TableProperties, Users, Clock, Ticket } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
-  const navigate = useNavigate();
   const [ticketCount, setTicketCount] = useState(0);
+  const [clientCount, setClientCount] = useState(0);
   const [sessionsCount, setSessionsCount] = useState(0);
 
   const loading = authLoading || dataLoading;
@@ -23,6 +22,10 @@ const Dashboard = () => {
         // Fetch user tickets count
         const ticketsSnap = await getDocs(query(collection(db, 'tickets'), where('userId', '==', user.uid)));
         setTicketCount(ticketsSnap.size);
+
+        // Fetch user clients count
+        const clientsSnap = await getDocs(query(collection(db, 'clients'), where('userId', '==', user.uid)));
+        setClientCount(clientsSnap.size);
 
         // Fetch sessions count
         const sessionsSnap = await getDocs(query(collection(db, 'userSessions'), where('userId', '==', user.uid)));
@@ -49,120 +52,14 @@ const Dashboard = () => {
 
   const stats = [
     { icon: <Ticket size={22} />, label: 'Pasajes Reservados', value: ticketCount, color: '#2d6a35' },
+    { icon: <Users size={22} />, label: 'Clientes Registrados', value: clientCount, color: '#0284c7' },
     { icon: <Clock size={22} />, label: 'Mis Sesiones', value: sessionsCount, color: '#e8a020' },
-    { icon: <Bus size={22} />, label: 'Rutas Disponibles', value: '4', color: '#1a4a1f' },
+    { icon: <LayoutDashboard size={22} />, label: 'Rutas Disponibles', value: '4', color: '#1a4a1f' }, // Corregido icono para rutas
   ];
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
-      {/* ── Sidebar ── */}
-      <aside
-        className="bg-cootrans"
-        style={{
-          width: 260, height: '100vh', display: 'flex', flexDirection: 'column',
-          padding: '1.5rem 1rem', flexShrink: 0, position: 'sticky', top: 0,
-          boxShadow: '4px 0 20px rgba(0,0,0,.15)',
-        }}
-      >
-        {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '2rem', padding: '0 .25rem' }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: '50%',
-            background: 'rgba(255,255,255,.15)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem',
-            border: '1.5px solid rgba(255,255,255,.25)',
-          }}>
-            <img src={logo} alt="Logo" />
-          </div>
-          <div>
-            <p style={{ color: '#fff', fontWeight: 800, fontSize: '.95rem', margin: 0, lineHeight: 1.2 }}>COOTRANS</p>
-            <p style={{ color: 'rgba(255,255,255,.55)', fontSize: '.72rem', margin: 0 }}>Hacaritama</p>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', flex: 1, overflowY: 'auto', marginBottom: '1rem' }}>
-          <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', padding: '.5rem 1.25rem .25rem', margin: 0 }}>
-            Menú Principal
-          </p>
-
-          <button
-            id="nav-dashboard"
-            className="sidebar-link active"
-            onClick={() => navigate('/dashboard')}
-          >
-            <LayoutDashboard size={18} /> Dashboard
-          </button>
-
-          <button
-            id="nav-book-ticket"
-            className="sidebar-link"
-            onClick={() => navigate('/tickets/new')}
-          >
-            <Ticket size={18} /> Reservar Pasaje
-          </button>
-
-          <button
-            id="nav-book-ticket"
-            className="sidebar-link"
-            onClick={() => navigate('/tickets/new')}
-          >
-            <Ticket size={18} /> Reservar Pasaje
-          </button>
-
-          <button
-            id="nav-tickets"
-            className="sidebar-link"
-            onClick={() => navigate('/tickets')}
-          >
-            <Bus size={18} /> Ver Mis Pasajes
-          </button>
-
-          <button
-            id="nav-sessions"
-            className="sidebar-link"
-            onClick={() => navigate('/sessions')}
-          >
-            <TableProperties size={18} /> Ver Sesiones
-          </button>
-        </nav>
-
-        {/* User + Logout con fpto de perfil */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.15)', paddingTop: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.5rem .75rem', marginBottom: '.75rem' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'rgba(255,255,255,.15)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-              fontSize: '.9rem', fontWeight: 700, color: '#fff',
-              flexShrink: 0, overflow: 'hidden'
-            }}>
-              {userData?.photoURL ? (
-                <img src={userData.photoURL} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                (userData?.name || user?.email || 'U')[0].toUpperCase()
-              )}
-            </div>
-            <div style={{ overflow: 'hidden' }}>
-              <p style={{ color: '#fff', fontSize: '.8rem', fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.displayName || 'Usuario'}
-              </p>
-              <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.7rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.email}
-              </p>
-            </div>
-          </div>
-          <button
-            id="btn-logout"
-            className="sidebar-link"
-            onClick={logout}
-            style={{ color: 'rgba(255,120,120,.9)', width: '100%' }}
-          >
-            <LogOut size={17} /> Cerrar Sesión
-          </button>
-        </div>
-      </aside>
-
+      
       {/* ── Main Content ── */}
       <main style={{ flex: 1, background: 'var(--gray-50)', padding: '2rem', overflow: 'auto' }}>
         {/* Header */}
@@ -229,7 +126,7 @@ const Dashboard = () => {
               </h2>
             </div>
             <p style={{ color: 'var(--gray-600)', fontSize: '.875rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-              Gestiona pasajes: reserva un nuevo viaje, consulta pasajes adquiridos, edítalos, elimínalos o imprímelos en formato de abordaje.
+              Gestiona pasajes: reserva un nuevo viaje, consulta pasajes adquiridos, edítalos, elimínalos o imprímelos en formato de boardsje.
             </p>
             <div style={{ display: 'flex', gap: '.75rem' }}>
               <Link
@@ -255,6 +152,47 @@ const Dashboard = () => {
                 }}
               >
                 Ver Mis Pasajes
+              </Link>
+            </div>
+          </div>
+
+          {/* Gestión de Clientes Card */}
+          <div className="card" style={{ padding: '1.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#0284c718', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7' }}>
+                <Users size={20} />
+              </div>
+              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--green-dark)', margin: 0 }}>
+                Gestión de Clientes
+              </h2>
+            </div>
+            <p style={{ color: 'var(--gray-600)', fontSize: '.875rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+              Administra clientes: registra nuevos clientes, edítalos, consulta sus datos, elimínalos o mantén un registro actualizado de contactos.
+            </p>
+            <div style={{ display: 'flex', gap: '.75rem' }}>
+              <Link
+                to="/clients/new"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+                  background: 'linear-gradient(135deg, #0284c7, #1e7ba8)',
+                  color: '#fff', fontWeight: 600, fontSize: '.825rem',
+                  padding: '.5rem 1rem', borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(2,132,199,.25)', transition: 'all .2s',
+                }}
+              >
+                Nuevo Cliente
+              </Link>
+              <Link
+                to="/clients"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+                  background: 'var(--gray-100)',
+                  color: 'var(--gray-800)', fontWeight: 600, fontSize: '.825rem',
+                  padding: '.5rem 1rem', borderRadius: '8px',
+                  transition: 'all .2s',
+                }}
+              >
+                Ver Clientes
               </Link>
             </div>
           </div>
@@ -301,6 +239,8 @@ const Dashboard = () => {
               {[
                 { label: 'Reservar un nuevo pasaje', to: '/tickets/new' },
                 { label: 'Listado de mis pasajes', to: '/tickets' },
+                { label: 'Nuevo cliente', to: '/clients/new' },
+                { label: 'Gestión de clientes', to: '/clients' },
                 { label: 'Historial de Sesiones', to: '/sessions' },
                 { label: 'Playground de Hooks', to: '/hooks' },
               ].map((item, i) => (
