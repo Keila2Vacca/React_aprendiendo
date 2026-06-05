@@ -1,22 +1,40 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import logo from '../assets/imagotipo.png';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../hooks/useUserData';
-import { LayoutDashboard, TableProperties, LogOut, Bus, Users, Clock } from 'lucide-react';
+import { db } from '../firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { LayoutDashboard, TableProperties, LogOut, Bus, Users, Clock, Ticket } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
   const navigate = useNavigate();
+  const [ticketCount, setTicketCount] = useState(0);
+  const [sessionsCount, setSessionsCount] = useState(0);
 
   const loading = authLoading || dataLoading;
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate('/');
+    const fetchCounts = async () => {
+      if (!user) return;
+      try {
+        // Fetch user tickets count
+        const ticketsSnap = await getDocs(query(collection(db, 'tickets'), where('userId', '==', user.uid)));
+        setTicketCount(ticketsSnap.size);
+
+        // Fetch sessions count
+        const sessionsSnap = await getDocs(query(collection(db, 'userSessions'), where('userId', '==', user.uid)));
+        setSessionsCount(sessionsSnap.size);
+      } catch (err) {
+        console.error("Error fetching dashboard counts:", err);
+      }
+    };
+    if (user) {
+      fetchCounts();
     }
-  }, [user, loading, navigate]);
+  }, [user]);
 
   if (loading) {
     return (
@@ -30,9 +48,9 @@ const Dashboard = () => {
   }
 
   const stats = [
-    { icon: <Users size={22} />, label: 'Usuarios Activos', value: '—', color: '#2d6a35' },
-    { icon: <Clock size={22} />, label: 'Sesiones Hoy', value: '—', color: '#e8a020' },
-    { icon: <Bus size={22} />, label: 'Rutas Disponibles', value: '—', color: '#1a4a1f' },
+    { icon: <Ticket size={22} />, label: 'Pasajes Reservados', value: ticketCount, color: '#2d6a35' },
+    { icon: <Clock size={22} />, label: 'Mis Sesiones', value: sessionsCount, color: '#e8a020' },
+    { icon: <Bus size={22} />, label: 'Rutas Disponibles', value: '4', color: '#1a4a1f' },
   ];
 
   return (
@@ -74,6 +92,30 @@ const Dashboard = () => {
             onClick={() => navigate('/dashboard')}
           >
             <LayoutDashboard size={18} /> Dashboard
+          </button>
+
+          <button
+            id="nav-book-ticket"
+            className="sidebar-link"
+            onClick={() => navigate('/tickets/new')}
+          >
+            <Ticket size={18} /> Reservar Pasaje
+          </button>
+
+          <button
+            id="nav-book-ticket"
+            className="sidebar-link"
+            onClick={() => navigate('/tickets/new')}
+          >
+            <Ticket size={18} /> Reservar Pasaje
+          </button>
+
+          <button
+            id="nav-tickets"
+            className="sidebar-link"
+            onClick={() => navigate('/tickets')}
+          >
+            <Bus size={18} /> Ver Mis Pasajes
           </button>
 
           <button
@@ -176,10 +218,51 @@ const Dashboard = () => {
 
         {/* Quick actions */}
         <div className="animate-fade-up delay-200" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-          {/* Access log card */}
+          {/* Reserva de Pasajes Card */}
           <div className="card" style={{ padding: '1.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem' }}>
               <div style={{ width: 40, height: 40, borderRadius: '10px', background: 'var(--green-main)18', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--green-main)' }}>
+                <Ticket size={20} />
+              </div>
+              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--green-dark)', margin: 0 }}>
+                Reserva de Pasajes
+              </h2>
+            </div>
+            <p style={{ color: 'var(--gray-600)', fontSize: '.875rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+              Gestiona pasajes: reserva un nuevo viaje, consulta pasajes adquiridos, edítalos, elimínalos o imprímelos en formato de abordaje.
+            </p>
+            <div style={{ display: 'flex', gap: '.75rem' }}>
+              <Link
+                to="/tickets/new"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+                  background: 'linear-gradient(135deg, var(--green-mid), var(--green-dark))',
+                  color: '#fff', fontWeight: 600, fontSize: '.825rem',
+                  padding: '.5rem 1rem', borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(45,106,53,.25)', transition: 'all .2s',
+                }}
+              >
+                Nueva Reserva
+              </Link>
+              <Link
+                to="/tickets"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+                  background: 'var(--gray-100)',
+                  color: 'var(--gray-800)', fontWeight: 600, fontSize: '.825rem',
+                  padding: '.5rem 1rem', borderRadius: '8px',
+                  transition: 'all .2s',
+                }}
+              >
+                Ver Mis Pasajes
+              </Link>
+            </div>
+          </div>
+
+          {/* Access log card */}
+          <div className="card" style={{ padding: '1.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#e8a02018', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e8a020' }}>
                 <TableProperties size={20} />
               </div>
               <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--green-dark)', margin: 0 }}>
@@ -194,10 +277,10 @@ const Dashboard = () => {
               to="/sessions"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '.4rem',
-                background: 'linear-gradient(135deg, var(--green-mid), var(--green-dark))',
+                background: 'linear-gradient(135deg, #e8a020, #c88010)',
                 color: '#fff', fontWeight: 600, fontSize: '.875rem',
                 padding: '.6rem 1.25rem', borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(45,106,53,.3)', transition: 'all .2s',
+                boxShadow: '0 4px 12px rgba(232,160,32,.3)', transition: 'all .2s',
               }}
             >
               Ver Sesiones
@@ -207,7 +290,7 @@ const Dashboard = () => {
           {/* Navigation card */}
           <div className="card" style={{ padding: '1.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem' }}>
-              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#e8a02018', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e8a020' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', background: 'rgba(26,74,31,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--green-dark)' }}>
                 <LayoutDashboard size={20} />
               </div>
               <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--green-dark)', margin: 0 }}>
@@ -216,9 +299,10 @@ const Dashboard = () => {
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
               {[
+                { label: 'Reservar un nuevo pasaje', to: '/tickets/new' },
+                { label: 'Listado de mis pasajes', to: '/tickets' },
                 { label: 'Historial de Sesiones', to: '/sessions' },
                 { label: 'Playground de Hooks', to: '/hooks' },
-                { label: 'Crear nueva cuenta', to: '/register' },
               ].map((item, i) => (
                 <li key={i}>
                   <Link
