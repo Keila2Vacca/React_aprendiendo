@@ -6,7 +6,9 @@ import { collection, getDocs, query, orderBy, updateDoc, doc, Timestamp } from '
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../hooks/useUserData';
 import { signOut } from 'firebase/auth';
-import { LayoutDashboard, TableProperties, LogOut, Bus, Search, ArrowLeft, Ticket } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Bus, Search, ArrowLeft, Ticket, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const SessionsPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -21,6 +23,63 @@ const SessionsPage = () => {
   const handleLogout = async () => {
     await logout();
     navigate('/');
+  };
+
+  const exportToPDF = async () => {
+    try {
+      const tableElement = document.querySelector('.data-table');
+      if (!tableElement) {
+        alert('No se encontró la tabla para exportar');
+        return;
+      }
+
+      // Capturar la tabla como imagen
+      const canvas = await html2canvas(tableElement, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 20; // Márgenes de 10mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 10;
+
+      // Título
+      pdf.setFontSize(16);
+      pdf.text('Registro de Sesiones - COOTRANS', 10, 10);
+      pdf.setFontSize(10);
+      pdf.text(`Generado: ${new Date().toLocaleString('es-CO')}`, 10, 20);
+
+      position = 28;
+
+      // Agregar imagen de la tabla
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight - 50;
+
+      // Agregar más páginas si es necesario
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`sesiones_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error al exportar PDF:', error);
+      alert('Error al exportar la tabla como PDF');
+    }
   };
 
   const filteredSessions = useMemo(() => {
@@ -100,6 +159,35 @@ const SessionsPage = () => {
               {filteredSessions.length} registro{filteredSessions.length !== 1 ? 's' : ''} encontrado{filteredSessions.length !== 1 ? 's' : ''}
             </p>
           </div>
+          <button
+            id="export-pdf-btn"
+            onClick={exportToPDF}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '.5rem',
+              padding: '.7rem 1.25rem',
+              borderRadius: '10px',
+              background: 'var(--green-main)',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '.875rem',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all .2s',
+              boxShadow: '0 2px 8px rgba(45,106,53,.15)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'var(--green-dark)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(45,106,53,.25)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'var(--green-main)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(45,106,53,.15)';
+            }}
+          >
+            <Download size={18} /> Descargar PDF
+          </button>
         </div>
 
         {/* Search */}

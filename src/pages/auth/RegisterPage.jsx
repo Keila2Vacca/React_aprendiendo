@@ -41,6 +41,16 @@ const RegisterPage = () => {
     confirmPassword: "",
   });
 
+  // Función para validar contraseña
+  const validatePassword = (pwd) => {
+    if (pwd.length < 10) return "La contraseña debe tener al menos 10 caracteres.";
+    if (!/[A-Z]/.test(pwd)) return "La contraseña debe contener al menos una mayúscula.";
+    if (!/[a-z]/.test(pwd)) return "La contraseña debe contener al menos una minúscula.";
+    if (!/[0-9]/.test(pwd)) return "La contraseña debe contener al menos un número.";
+    if (!/[!@#$%^&*()_+\-=\[\]{};:'",.<>?]/.test(pwd)) return "La contraseña debe contener al menos un carácter especial (!@#$%^&*...).";
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ type: null, message: "" });
@@ -62,8 +72,9 @@ const RegisterPage = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setStatus({ type: "error", message: "La contraseña debe tener al menos 6 caracteres." });
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setStatus({ type: "error", message: passwordError });
       return;
     }
 
