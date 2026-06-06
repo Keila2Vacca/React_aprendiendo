@@ -32,7 +32,7 @@ const BookTicketPage = () => {
   
   const [showPayment, setShowPayment] = useState(false);
   const [paymentData, setPaymentData] = useState({
-    metodoPago: 'Nequi',
+    metodoPago: 'Efectivo',
     titular: '',
     referencia: '',
   });
@@ -115,8 +115,18 @@ const BookTicketPage = () => {
 
   const handleSimulatePayment = async (e) => {
     e.preventDefault();
-    if (!paymentData.titular || !paymentData.referencia) {
+    if (!paymentData.titular) {
       setError('Por favor complete los datos básicos de pago');
+      return;
+    }
+
+    // Validar teléfono nuevamente en pago: solo números y exactamente 10 dígitos
+    if (!/^\d+$/.test(formData.telefono)) {
+      setError('El teléfono debe contener solo números.');
+      return;
+    }
+    if (formData.telefono.length !== 10) {
+      setError('El teléfono debe tener exactamente 10 dígitos.');
       return;
     }
 
@@ -166,7 +176,6 @@ const BookTicketPage = () => {
     navigate(`/tickets/view/${createdTicketId}?print=true`);
   };
 
-  // ── RENDER CORREGIDO (SIN EL ASIDE DUPLICADO) ──
   return (
     <main style={{ background: 'var(--gray-50)', padding: '2rem', overflow: 'auto', fontFamily: "'Inter', sans-serif" }}>
       <div className="animate-fade-up" style={{ marginBottom: '1.5rem' }}>
@@ -350,7 +359,7 @@ const BookTicketPage = () => {
                       <option value="Nequi">Nequi</option>
                       <option value="Daviplata">Daviplata</option>
                       <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
-                      <option value="Efectivo (Taquilla)">Efectivo (Taquilla)</option>
+                      <option value="Efectivo">Efectivo</option>
                     </select>
                   </div>
                   <div>
@@ -358,14 +367,6 @@ const BookTicketPage = () => {
                     <input type="text" placeholder="Nombre completo" className="form-input" style={{ paddingLeft: '1rem' }} required
                       value={paymentData.titular} onChange={(e) => setPaymentData({ ...paymentData, titular: e.target.value })} />
                   </div>
-                </div>
-
-                <div style={{ marginBottom: '2rem' }}>
-                  <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 600, color: 'var(--gray-800)', marginBottom: '.35rem' }}>
-                    {paymentData.metodoPago === 'Tarjeta de Crédito' ? 'Número de Tarjeta (4 últimos dígitos) *' : 'Número de Celular / Referencia *'}
-                  </label>
-                  <input type="text" placeholder={paymentData.metodoPago === 'Tarjeta de Crédito' ? '4321' : '3001234567'} className="form-input" style={{ paddingLeft: '1rem' }} required
-                    value={paymentData.referencia} onChange={(e) => setPaymentData({ ...paymentData, referencia: e.target.value })} />
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
