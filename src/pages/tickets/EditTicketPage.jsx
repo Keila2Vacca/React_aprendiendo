@@ -5,13 +5,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../hooks/useUserData';
 import { db } from '../../firebase';
 import { doc, getDoc, updateDoc, collection, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
-import { LayoutDashboard, TableProperties, LogOut, Bus, ArrowLeft, Ticket, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Bus, ArrowLeft, Ticket, AlertCircle, CheckCircle2, Users, ChevronDown, Plus } from 'lucide-react';
 
 const EditTicketPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [expandedMenu, setExpandedMenu] = useState(false);
 
   const [formData, setFormData] = useState({
     primerNombre: '',
@@ -240,6 +241,48 @@ const EditTicketPage = () => {
           <Link to="/tickets" className="sidebar-link active">
             <Bus size={18} /> Mis Pasajes
           </Link>
+
+          {/* Menú desplegable para Conductores */}
+          <button
+            onClick={() => setExpandedMenu(!expandedMenu)}
+            className="sidebar-link"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: expandedMenu ? 'rgba(255,255,255,.1)' : 'transparent',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Users size={18} /> Conductores
+            </div>
+            <ChevronDown
+              size={16}
+              style={{
+                transform: expandedMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease',
+              }}
+            />
+          </button>
+
+          {expandedMenu && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
+              <Link
+                to="/drivers/new"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Plus size={16} /> Agregar Conductor
+              </Link>
+              <Link
+                to="/drivers"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Users size={16} /> Listado de Conductores
+              </Link>
+            </div>
+          )}
 
           <Link to="/sessions" className="sidebar-link">
             <TableProperties size={18} /> Ver Sesiones

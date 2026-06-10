@@ -5,12 +5,13 @@ import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../hooks/useUserData';
 import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
-import { LayoutDashboard, TableProperties, LogOut, Bus, Printer, CreditCard, ArrowLeft, Ticket, CheckCircle2, AlertCircle } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Bus, Printer, CreditCard, ArrowLeft, Ticket, CheckCircle2, AlertCircle, Users, ChevronDown, Plus } from 'lucide-react';
 
 const BookTicketPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
   const navigate = useNavigate();
+  const [expandedMenu, setExpandedMenu] = useState(false);
 
   const [formData, setFormData] = useState({
     primerNombre: '',
@@ -199,6 +200,93 @@ const BookTicketPage = () => {
           <AlertCircle size={18} style={{ flexShrink: 0 }} />
           <span>{error}</span>
         </div>
+
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', flex: 1, overflowY: 'auto', marginBottom: '1rem' }}>
+          <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', padding: '.5rem 1.25rem .25rem', margin: 0 }}>
+            Menú Principal
+          </p>
+
+          <Link to="/dashboard" className="sidebar-link">
+            <LayoutDashboard size={18} /> Dashboard
+          </Link>
+
+          <Link to="/tickets/new" className="sidebar-link active">
+            <Ticket size={18} /> Reservar Pasaje
+          </Link>
+
+          <Link to="/tickets" className="sidebar-link">
+            <Bus size={18} /> Mis Pasajes
+          </Link>
+
+          {/* Menú desplegable para Conductores */}
+          <button
+            onClick={() => setExpandedMenu(!expandedMenu)}
+            className="sidebar-link"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: expandedMenu ? 'rgba(255,255,255,.1)' : 'transparent',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Users size={18} /> Conductores
+            </div>
+            <ChevronDown
+              size={16}
+              style={{
+                transform: expandedMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease',
+              }}
+            />
+          </button>
+
+          {expandedMenu && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
+              <Link
+                to="/drivers/new"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Plus size={16} /> Agregar Conductor
+              </Link>
+              <Link
+                to="/drivers"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Users size={16} /> Listado de Conductores
+              </Link>
+            </div>
+          )}
+
+          <Link to="/sessions" className="sidebar-link">
+            <TableProperties size={18} /> Ver Sesiones
+          </Link>
+        </nav>
+
+        <div style={{ borderTop: '1px solid rgba(255,255,255,.15)', paddingTop: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.5rem .75rem', marginBottom: '.75rem' }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'rgba(255,255,255,.15)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              fontSize: '.9rem', fontWeight: 700, color: '#fff',
+              flexShrink: 0, overflow: 'hidden'
+            }}>
+              {userData?.photoURL ? (
+                <img src={userData.photoURL} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                (userData?.name || user?.email || 'U')[0].toUpperCase()
+              )}
+            </div>
+            <div style={{ overflow: 'hidden' }}>
+              <p style={{ color: '#fff', fontSize: '.8rem', fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {userData?.name || 'Usuario'}
+              </p>
+              <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.7rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.email}
+              </p>
       )}
 
       <div className="card animate-fade-up delay-100" style={{ padding: '2rem', maxWidth: '800px', background: '#fff' }}>

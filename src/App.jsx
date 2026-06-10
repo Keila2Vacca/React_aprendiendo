@@ -51,6 +51,11 @@ import BookTicketPage from './pages/tickets/BookTicketPage'
 import EditTicketPage from './pages/tickets/EditTicketPage'
 import ViewTicketPage from './pages/tickets/ViewTicketPage'
 
+// Drivers CRUD Pages
+import DriversListPage from './pages/drivers/DriversListPage'
+import AddDriverPage from './pages/drivers/AddDriverPage'
+import EditDriverPage from './pages/drivers/EditDriverPage'
+import ViewDriverPage from './pages/drivers/ViewDriverPage'
 // Clients CRUD Pages
 import ClientsListPage from './pages/clients/ClientsListPage'
 import AddClientPage from './pages/clients/AddClientPage'
@@ -152,6 +157,28 @@ function App() {
             <DashboardLayout>
               <ViewClientPage />
             </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Drivers CRUD Routes */}
+        <Route path='/drivers' element={
+          <ProtectedRoute>
+            <DriversListPage />
+          </ProtectedRoute>
+        } />
+        <Route path='/drivers/new' element={
+          <ProtectedRoute>
+            <AddDriverPage />
+          </ProtectedRoute>
+        } />
+        <Route path='/drivers/edit/:id' element={
+          <ProtectedRoute>
+            <EditDriverPage />
+          </ProtectedRoute>
+        } />
+        <Route path='/drivers/view/:id' element={
+          <ProtectedRoute>
+            <ViewDriverPage />
           </ProtectedRoute>
         } />
 

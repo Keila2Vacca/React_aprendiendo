@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../hooks/useUserData';
 import { db } from '../../firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { LayoutDashboard, TableProperties, LogOut, Bus, ArrowLeft, Ticket, Printer, Check, User, Calendar, MapPin, CreditCard } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Bus, ArrowLeft, Ticket, Printer, Check, User, Calendar, MapPin, CreditCard, Users, ChevronDown, Plus } from 'lucide-react';
 
 const ViewTicketPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -13,6 +13,7 @@ const ViewTicketPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [expandedMenu, setExpandedMenu] = useState(false);
 
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import logo from '../../assets/imagotipo.png';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../hooks/useUserData';
 import { db } from '../../firebase';
 import { collection, getDocs, query, where, deleteDoc, doc, orderBy } from 'firebase/firestore';
-import { LayoutDashboard, TableProperties, LogOut, Bus, Search, Ticket, Eye, Edit2, Trash2, Plus, AlertTriangle, CheckCircle2, Users, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Users, Search, Eye, Edit2, Trash2, Plus, AlertTriangle, CheckCircle2, ChevronDown } from 'lucide-react';
 
-const TicketsListPage = () => {
+const DriversListPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [tickets, setTickets] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
@@ -20,88 +21,84 @@ const TicketsListPage = () => {
   const [expandedMenu, setExpandedMenu] = useState(false);
 
   useEffect(() => {
-    const fetchTickets = async () => {
+    const fetchDrivers = async () => {
       if (!user) {
-        setTickets([]);
+        setDrivers([]);
         setLoading(false);
         return;
       }
       try {
-        console.log("Fetching tickets for user:", user.uid);
+        console.log("Fetching drivers for user:", user.uid);
         const q = query(
-          collection(db, 'tickets'),
+          collection(db, 'drivers'),
           where('userId', '==', user.uid),
           orderBy('createdAt', 'desc')
         );
         const snap = await getDocs(q);
-        console.log("Tickets found:", snap.size);
-        setTickets(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        console.log("Drivers found:", snap.size);
+        setDrivers(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (err) {
-        console.error("Error fetching tickets:", err);
+        console.error("Error fetching drivers:", err);
         // Si hay error con orderBy, intentar sin ordenar
         try {
           console.log("Retrying without orderBy...");
           const q = query(
-            collection(db, 'tickets'),
+            collection(db, 'drivers'),
             where('userId', '==', user.uid)
           );
           const snap = await getDocs(q);
-          console.log("Tickets found (no orderBy):", snap.size);
-          const ticketsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          console.log("Drivers found (no orderBy):", snap.size);
+          const driversData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           // Ordenar en el cliente
-          ticketsData.sort((a, b) => {
+          driversData.sort((a, b) => {
             const timeA = a.createdAt?.seconds || 0;
             const timeB = b.createdAt?.seconds || 0;
             return timeB - timeA;
           });
-          setTickets(ticketsData);
+          setDrivers(driversData);
         } catch (retryErr) {
-          console.error("Error fetching tickets (retry):", retryErr);
+          console.error("Error fetching drivers (retry):", retryErr);
         }
       } finally {
         setLoading(false);
       }
     };
-    fetchTickets();
+    fetchDrivers();
   }, [user]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await deleteDoc(doc(db, 'tickets', deleteId));
-      setTickets(tickets.filter(t => t.id !== deleteId));
-      setSuccessMsg('Reserva eliminada correctamente.');
+      await deleteDoc(doc(db, 'drivers', deleteId));
+      setDrivers(drivers.filter(d => d.id !== deleteId));
+      setSuccessMsg('Conductor eliminado correctamente.');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
-      console.error("Error deleting ticket:", err);
+      console.error("Error deleting driver:", err);
     } finally {
       setDeleteId(null);
     }
   };
 
-  const filteredTickets = useMemo(() => {
+  const filteredDrivers = useMemo(() => {
     const search = searchTerm.toLowerCase().trim();
-    if (!search) return tickets;
-    return tickets.filter(t => {
-      const passenger = t.passengerInfo;
-      const fullName = `${passenger.primerNombre} ${passenger.segundoNombre || ''} ${passenger.primerApellido} ${passenger.segundoApellido || ''}`.toLowerCase();
-      const document = (passenger.documento || '').toLowerCase();
-      const phone = (passenger.telefono || '').toLowerCase();
-      const route = (t.travelInfo?.ruta || '').toLowerCase();
-      return fullName.includes(search) || document.includes(search) || phone.includes(search) || route.includes(search);
+    if (!search) return drivers;
+    return drivers.filter(d => {
+      const driverInfo = d.driverInfo;
+      const fullName = `${driverInfo.primerNombre} ${driverInfo.segundoNombre || ''} ${driverInfo.primerApellido} ${driverInfo.segundoApellido || ''}`.toLowerCase();
+      const document = (driverInfo.documento || '').toLowerCase();
+      const phone = (driverInfo.telefono || '').toLowerCase();
+      const license = (d.licenseInfo?.numeroLicencia || '').toLowerCase();
+      return fullName.includes(search) || document.includes(search) || phone.includes(search) || license.includes(search);
     });
-  }, [tickets, searchTerm]);
-
-  const formatCOP = (val) => {
-    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
-  };
+  }, [drivers, searchTerm]);
 
   if (loading || authLoading) {
     return (
       <div className="bg-cootrans" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', color: '#fff' }}>
           <div style={{ width: 48, height: 48, border: '4px solid rgba(255,255,255,.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
-          <p style={{ fontWeight: 500 }}>Cargando pasajes...</p>
+          <p style={{ fontWeight: 500 }}>Cargando conductores...</p>
         </div>
       </div>
     );
@@ -143,11 +140,11 @@ const TicketsListPage = () => {
           </Link>
 
           <Link to="/tickets/new" className="sidebar-link">
-            <Ticket size={18} /> Reservar Pasaje
+            <Plus size={18} /> Reservar Pasaje
           </Link>
 
-          <Link to="/tickets" className="sidebar-link active">
-            <Bus size={18} /> Mis Pasajes
+          <Link to="/tickets" className="sidebar-link">
+            <TableProperties size={18} /> Ver Pasajes
           </Link>
 
           {/* Menú desplegable para Conductores */}
@@ -177,14 +174,14 @@ const TicketsListPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
               <Link
                 to="/drivers/new"
-                className="sidebar-link"
+                className={`sidebar-link ${location.pathname === '/drivers/new' ? 'active' : ''}`}
                 style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
               >
                 <Plus size={16} /> Agregar Conductor
               </Link>
               <Link
                 to="/drivers"
-                className="sidebar-link"
+                className={`sidebar-link ${location.pathname === '/drivers' ? 'active' : ''}`}
                 style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
               >
                 <Users size={16} /> Listado de Conductores
@@ -233,18 +230,18 @@ const TicketsListPage = () => {
         <div className="animate-fade-up" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--green-dark)', margin: 0 }}>
-              Mis Pasajes Reservados
+              Gestión de Conductores
             </h1>
             <p style={{ color: 'var(--gray-600)', margin: '.25rem 0 0', fontSize: '.875rem' }}>
-              {filteredTickets.length} pasaje{filteredTickets.length !== 1 ? 's' : ''} encontrado{filteredTickets.length !== 1 ? 's' : ''}
+              {filteredDrivers.length} conductor{filteredDrivers.length !== 1 ? 'es' : ''} encontrado{filteredDrivers.length !== 1 ? 's' : ''}
             </p>
           </div>
           <Link
-            to="/tickets/new"
+            to="/drivers/new"
             className="btn-gold"
             style={{ padding: '.6rem 1.25rem', borderRadius: '8px', fontSize: '.875rem' }}
           >
-            <Plus size={16} /> Reservar Pasaje
+            <Plus size={16} /> Agregar Conductor
           </Link>
         </div>
 
@@ -264,9 +261,9 @@ const TicketsListPage = () => {
         <div className="animate-fade-up delay-100" style={{ position: 'relative', marginBottom: '1.25rem', maxWidth: 480 }}>
           <Search size={17} style={{ position: 'absolute', left: '.875rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-400)' }} />
           <input
-            id="tickets-search"
+            id="drivers-search"
             type="text"
-            placeholder="Buscar por pasajero, documento o ruta..."
+            placeholder="Buscar por nombre, documento, teléfono o licencia..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="form-input"
@@ -284,86 +281,84 @@ const TicketsListPage = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Pasajero</th>
+                  <th>Conductor</th>
                   <th>Documento</th>
-                  <th>Ruta</th>
-                  <th>Viaje</th>
-                  <th>Asiento</th>
-                  <th>Precio</th>
-                  <th>Pago</th>
-                  <th style={{ textAlign: 'center' }}>Acciones</th>
+                  <th>Teléfono</th>
+                  <th>Licencia</th>
+                  <th>Vehículo</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredTickets.length > 0 ? (
-                  filteredTickets.map((t) => (
-                    <tr key={t.id}>
-                      <td style={{ fontWeight: 600 }}>
-                        {t.passengerInfo.primerNombre} {t.passengerInfo.primerApellido}
-                      </td>
-                      <td style={{ color: 'var(--gray-600)' }}>{t.passengerInfo.documento}</td>
-                      <td>{t.travelInfo.ruta}</td>
-                      <td>{t.travelInfo.viajeDisponible}</td>
-                      <td style={{ fontWeight: 700, color: 'var(--green-mid)' }}>#{t.travelInfo.nroAsiento}</td>
-                      <td style={{ fontWeight: 700 }}>{formatCOP(t.travelInfo.precioTotal)}</td>
+                {filteredDrivers.length > 0 ? (
+                  filteredDrivers.map(driver => (
+                    <tr key={driver.id} style={{ borderBottom: '1px solid var(--gray-200)', transition: 'background 0.2s' }}>
                       <td>
-                        <span className="badge-active">
-                          {t.paymentInfo.metodoPago}
+                        <div style={{ fontWeight: 500, color: 'var(--gray-900)' }}>
+                          {`${driver.driverInfo.primerNombre} ${driver.driverInfo.primerApellido}`}
+                        </div>
+                        <div style={{ fontSize: '.8rem', color: 'var(--gray-500)', marginTop: '.2rem' }}>
+                          {driver.driverInfo.email || ''}
+                        </div>
+                      </td>
+                      <td>{driver.driverInfo.documento}</td>
+                      <td>{driver.driverInfo.telefono}</td>
+                      <td>{driver.licenseInfo?.numeroLicencia || '-'}</td>
+                      <td>{driver.vehicleInfo?.placa || '-'}</td>
+                      <td>
+                        <span style={{
+                          padding: '.3rem .6rem', borderRadius: '4px', fontSize: '.75rem', fontWeight: 600,
+                          background: driver.status === 'activo' ? '#dbeafe' : '#fee2e2',
+                          color: driver.status === 'activo' ? '#0c4a6e' : '#7f1d1d'
+                        }}>
+                          {driver.status === 'activo' ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '.4rem', justifyContent: 'center' }}>
-                          <button
-                            onClick={() => navigate(`/tickets/view/${t.id}`)}
-                            title="Visualizar Pasaje"
-                            style={{
-                              border: 'none', background: 'var(--gray-100)', color: 'var(--gray-800)',
-                              padding: '.4rem', borderRadius: '6px', cursor: 'pointer', display: 'flex',
-                              alignItems: 'center', transition: 'var(--transition)'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'var(--gray-200)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'var(--gray-100)'}
-                          >
-                            <Eye size={15} />
-                          </button>
-                          <button
-                            onClick={() => navigate(`/tickets/edit/${t.id}`)}
-                            title="Editar Pasaje"
-                            style={{
-                              border: 'none', background: 'rgba(232,160,32,0.1)', color: 'var(--gold-dark)',
-                              padding: '.4rem', borderRadius: '6px', cursor: 'pointer', display: 'flex',
-                              alignItems: 'center', transition: 'var(--transition)'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,160,32,0.2)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(232,160,32,0.1)'}
-                          >
-                            <Edit2 size={15} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteId(t.id)}
-                            title="Eliminar Pasaje"
-                            style={{
-                              border: 'none', background: 'rgba(220,38,38,0.1)', color: '#dc2626',
-                              padding: '.4rem', borderRadius: '6px', cursor: 'pointer', display: 'flex',
-                              alignItems: 'center', transition: 'var(--transition)'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(220,38,38,0.2)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(220,38,38,0.1)'}
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
+                      <td style={{ display: 'flex', gap: '.5rem', justifyContent: 'center' }}>
+                        <Link
+                          to={`/drivers/view/${driver.id}`}
+                          style={{
+                            padding: '.4rem .6rem', borderRadius: '4px', background: 'var(--blue-50)',
+                            border: '1px solid var(--blue-200)', cursor: 'pointer', display: 'inline-flex',
+                            alignItems: 'center', gap: '.3rem', color: 'var(--blue-600)', fontSize: '.75rem',
+                            fontWeight: 500, transition: 'all 0.2s'
+                          }}
+                          className="hover-btn"
+                        >
+                          <Eye size={14} /> Ver
+                        </Link>
+                        <Link
+                          to={`/drivers/edit/${driver.id}`}
+                          style={{
+                            padding: '.4rem .6rem', borderRadius: '4px', background: 'var(--amber-50)',
+                            border: '1px solid var(--amber-200)', cursor: 'pointer', display: 'inline-flex',
+                            alignItems: 'center', gap: '.3rem', color: 'var(--amber-600)', fontSize: '.75rem',
+                            fontWeight: 500, transition: 'all 0.2s'
+                          }}
+                          className="hover-btn"
+                        >
+                          <Edit2 size={14} /> Editar
+                        </Link>
+                        <button
+                          onClick={() => setDeleteId(driver.id)}
+                          style={{
+                            padding: '.4rem .6rem', borderRadius: '4px', background: 'var(--red-50)',
+                            border: '1px solid var(--red-200)', cursor: 'pointer', display: 'inline-flex',
+                            alignItems: 'center', gap: '.3rem', color: 'var(--red-600)', fontSize: '.75rem',
+                            fontWeight: 500, transition: 'all 0.2s'
+                          }}
+                          className="hover-btn"
+                        >
+                          <Trash2 size={14} /> Eliminar
+                        </button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--gray-400)' }}>
-                      <Ticket size={42} style={{ margin: '0 auto .75rem', display: 'block', opacity: .35 }} />
-                      <p style={{ margin: 0, fontWeight: 500 }}>No se encontraron pasajes</p>
-                      <p style={{ margin: '.35rem 0 0', fontSize: '.85rem' }}>
-                        {searchTerm ? 'Intente con otro término de búsqueda' : 'Reserve su primer pasaje haciendo clic en el botón superior'}
-                      </p>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray-500)' }}>
+                      No hay conductores registrados
                     </td>
                   </tr>
                 )}
@@ -373,35 +368,30 @@ const TicketsListPage = () => {
         </div>
       </main>
 
-      {/* Modal Confirmar Eliminación */}
+      {/* ── Modal de Confirmación de Eliminación ── */}
       {deleteId && (
         <div style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center",
-          justifyContent: "center", zIndex: 1000, padding: "1rem",
-          backdropFilter: "blur(4px)"
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }}>
-          <div className="animate-fade-up" style={{
-            background: "#fff", borderRadius: "var(--radius-lg)",
-            padding: "2rem", maxWidth: "420px", width: "100%",
-            boxShadow: "var(--shadow-xl)", border: "1px solid var(--gray-200)",
-            textAlign: "center"
+          <div style={{
+            background: '#fff', borderRadius: '12px', padding: '2rem', boxShadow: '0 20px 60px rgba(0,0,0,.3)',
+            maxWidth: 400, textAlign: 'center'
           }}>
-            <div style={{ display: 'inline-flex', color: '#dc2626', background: 'rgba(220,38,38,0.1)', padding: '1rem', borderRadius: '50%', marginBottom: '1rem' }}>
-              <AlertTriangle size={36} />
-            </div>
-            <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--green-dark)", margin: "0 0 .5rem" }}>
-              ¿Eliminar Reserva de Pasaje?
-            </h3>
-            <p style={{ color: "var(--gray-600)", fontSize: ".875rem", lineHeight: 1.5, margin: "0 0 2rem" }}>
-              Esta acción es permanente y eliminará la reserva seleccionada de nuestro sistema. ¿Desea continuar?
+            <AlertTriangle size={48} style={{ margin: '0 auto 1rem', color: '#dc2626' }} />
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 .5rem', color: 'var(--gray-900)' }}>
+              Confirmar eliminación
+            </h2>
+            <p style={{ color: 'var(--gray-600)', marginBottom: '1.5rem', fontSize: '.875rem' }}>
+              ¿Está seguro de que desea eliminar este conductor? Esta acción no se puede deshacer.
             </p>
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
               <button
                 onClick={() => setDeleteId(null)}
                 style={{
-                  flex: 1, background: 'none', border: '1px solid var(--gray-200)', color: 'var(--gray-600)',
-                  padding: '.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, cursor: 'pointer'
+                  padding: '.6rem 1.25rem', borderRadius: '8px', border: '1px solid var(--gray-300)',
+                  background: '#fff', cursor: 'pointer', fontWeight: 500, fontSize: '.875rem',
+                  transition: 'all 0.2s'
                 }}
               >
                 Cancelar
@@ -409,9 +399,9 @@ const TicketsListPage = () => {
               <button
                 onClick={handleDelete}
                 style={{
-                  flex: 1, background: '#dc2626', border: 'none', color: '#fff',
-                  padding: '.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(220,38,38,0.3)'
+                  padding: '.6rem 1.25rem', borderRadius: '8px', background: '#dc2626', color: '#fff',
+                  border: 'none', cursor: 'pointer', fontWeight: 500, fontSize: '.875rem',
+                  transition: 'all 0.2s'
                 }}
               >
                 Eliminar
@@ -424,4 +414,4 @@ const TicketsListPage = () => {
   );
 };
 
-export default TicketsListPage;
+export default DriversListPage;

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../hooks/useUserData';
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { LayoutDashboard, TableProperties, Users, Clock, Ticket } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Bus, Users, Clock, Ticket, ChevronDown, Plus } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [ticketCount, setTicketCount] = useState(0);
   const [clientCount, setClientCount] = useState(0);
   const [sessionsCount, setSessionsCount] = useState(0);
+  const [expandedMenu, setExpandedMenu] = useState(false);
 
   const loading = authLoading || dataLoading;
 
@@ -59,7 +60,154 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
-      
+      {/* ── Sidebar ── */}
+      <aside
+        className="bg-cootrans"
+        style={{
+          width: 260, height: '100vh', display: 'flex', flexDirection: 'column',
+          padding: '1.5rem 1rem', flexShrink: 0, position: 'sticky', top: 0,
+          boxShadow: '4px 0 20px rgba(0,0,0,.15)',
+        }}
+      >
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '2rem', padding: '0 .25rem' }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: '50%',
+            background: 'rgba(255,255,255,.15)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem',
+            border: '1.5px solid rgba(255,255,255,.25)',
+          }}>
+            <img src={logo} alt="Logo" />
+          </div>
+          <div>
+            <p style={{ color: '#fff', fontWeight: 800, fontSize: '.95rem', margin: 0, lineHeight: 1.2 }}>COOTRANS</p>
+            <p style={{ color: 'rgba(255,255,255,.55)', fontSize: '.72rem', margin: 0 }}>Hacaritama</p>
+          </div>
+        </div>
+
+        {/* Nav */}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', flex: 1, overflowY: 'auto', marginBottom: '1rem' }}>
+          <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', padding: '.5rem 1.25rem .25rem', margin: 0 }}>
+            Menú Principal
+          </p>
+
+          <button
+            id="nav-dashboard"
+            className="sidebar-link active"
+            onClick={() => navigate('/dashboard')}
+          >
+            <LayoutDashboard size={18} /> Dashboard
+          </button>
+
+          <Link to="/tickets/new" className="sidebar-link">
+            <Ticket size={18} /> Reservar Pasaje
+          </Link>
+
+          <Link to="/tickets" className="sidebar-link">
+            <Bus size={18} /> Ver Mis Pasajes
+          </Link>
+
+          {/* Menú desplegable para Conductores */}
+          <button
+            onClick={() => setExpandedMenu(!expandedMenu)}
+            className="sidebar-link"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: expandedMenu ? 'rgba(255,255,255,.1)' : 'transparent',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Users size={18} /> Conductores
+            </div>
+            <ChevronDown
+              size={16}
+              style={{
+                transform: expandedMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease',
+              }}
+            />
+          </button>
+
+          {expandedMenu && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
+              <Link
+                to="/drivers/new"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Plus size={16} /> Agregar Conductor
+              </Link>
+              <Link
+                to="/drivers"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Users size={16} /> Listado de Conductores
+              </Link>
+              <Link
+                to="/drivers"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Users size={16} /> Editar Conductores
+              </Link>
+              <Link
+                to="/drivers"
+                className="sidebar-link"
+                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
+              >
+                <Users size={16} /> Ver
+              </Link>
+            </div>
+          )}
+
+          <button
+            id="nav-sessions"
+            className="sidebar-link"
+            onClick={() => navigate('/sessions')}
+          >
+            <TableProperties size={18} /> Ver Sesiones
+          </button>
+        </nav>
+
+        {/* User + Logout con fpto de perfil */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,.15)', paddingTop: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.5rem .75rem', marginBottom: '.75rem' }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'rgba(255,255,255,.15)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              fontSize: '.9rem', fontWeight: 700, color: '#fff',
+              flexShrink: 0, overflow: 'hidden'
+            }}>
+              {userData?.photoURL ? (
+                <img src={userData.photoURL} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                (userData?.name || user?.email || 'U')[0].toUpperCase()
+              )}
+            </div>
+            <div style={{ overflow: 'hidden' }}>
+              <p style={{ color: '#fff', fontSize: '.8rem', fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.displayName || 'Usuario'}
+              </p>
+              <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.7rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.email}
+              </p>
+            </div>
+          </div>
+          <button
+            id="btn-logout"
+            className="sidebar-link"
+            onClick={logout}
+            style={{ color: 'rgba(255,120,120,.9)', width: '100%' }}
+          >
+            <LogOut size={17} /> Cerrar Sesión
+          </button>
+        </div>
+      </aside>
+
       {/* ── Main Content ── */}
       <main style={{ flex: 1, background: 'var(--gray-50)', padding: '2rem', overflow: 'auto' }}>
         {/* Header */}
