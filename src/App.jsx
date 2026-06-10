@@ -163,22 +163,30 @@ function App() {
         {/* Drivers CRUD Routes */}
         <Route path='/drivers' element={
           <ProtectedRoute>
-            <DriversListPage />
+            <DashboardLayout>
+              <DriversListPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path='/drivers/new' element={
           <ProtectedRoute>
-            <AddDriverPage />
+            <DashboardLayout>
+              <AddDriverPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path='/drivers/edit/:id' element={
           <ProtectedRoute>
-            <EditDriverPage />
+            <DashboardLayout>
+              <EditDriverPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path='/drivers/view/:id' element={
           <ProtectedRoute>
-            <ViewDriverPage />
+            <DashboardLayout>
+              <ViewDriverPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
 

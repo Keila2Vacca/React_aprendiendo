@@ -105,127 +105,7 @@ const DriversListPage = () => {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
-      {/* ── Sidebar ── */}
-      <aside
-        className="bg-cootrans"
-        style={{
-          width: 260, height: '100vh', display: 'flex', flexDirection: 'column',
-          padding: '1.5rem 1rem', flexShrink: 0, position: 'sticky', top: 0,
-          boxShadow: '4px 0 20px rgba(0,0,0,.15)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '2rem', padding: '0 .25rem' }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: '50%',
-            background: 'rgba(255,255,255,.15)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem',
-            border: '1.5px solid rgba(255,255,255,.25)',
-          }}>
-            <img src={logo} alt="Logo" />
-          </div>
-          <div>
-            <p style={{ color: '#fff', fontWeight: 800, fontSize: '.95rem', margin: 0, lineHeight: 1.2 }}>COOTRANS</p>
-            <p style={{ color: 'rgba(255,255,255,.55)', fontSize: '.72rem', margin: 0 }}>Hacaritama</p>
-          </div>
-        </div>
-
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', flex: 1, overflowY: 'auto', marginBottom: '1rem' }}>
-          <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', padding: '.5rem 1.25rem .25rem', margin: 0 }}>
-            Menú Principal
-          </p>
-
-          <Link to="/dashboard" className="sidebar-link">
-            <LayoutDashboard size={18} /> Dashboard
-          </Link>
-
-          <Link to="/tickets/new" className="sidebar-link">
-            <Plus size={18} /> Reservar Pasaje
-          </Link>
-
-          <Link to="/tickets" className="sidebar-link">
-            <TableProperties size={18} /> Ver Pasajes
-          </Link>
-
-          {/* Menú desplegable para Conductores */}
-          <button
-            onClick={() => setExpandedMenu(!expandedMenu)}
-            className="sidebar-link"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              backgroundColor: expandedMenu ? 'rgba(255,255,255,.1)' : 'transparent',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Users size={18} /> Conductores
-            </div>
-            <ChevronDown
-              size={16}
-              style={{
-                transform: expandedMenu ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s ease',
-              }}
-            />
-          </button>
-
-          {expandedMenu && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
-              <Link
-                to="/drivers/new"
-                className={`sidebar-link ${location.pathname === '/drivers/new' ? 'active' : ''}`}
-                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
-              >
-                <Plus size={16} /> Agregar Conductor
-              </Link>
-              <Link
-                to="/drivers"
-                className={`sidebar-link ${location.pathname === '/drivers' ? 'active' : ''}`}
-                style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
-              >
-                <Users size={16} /> Listado de Conductores
-              </Link>
-            </div>
-          )}
-
-          <Link to="/sessions" className="sidebar-link">
-            <TableProperties size={18} /> Ver Sesiones
-          </Link>
-        </nav>
-
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.15)', paddingTop: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.5rem .75rem', marginBottom: '.75rem' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'rgba(255,255,255,.15)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-              fontSize: '.9rem', fontWeight: 700, color: '#fff',
-              flexShrink: 0, overflow: 'hidden'
-            }}>
-              {userData?.photoURL ? (
-                <img src={userData.photoURL} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                (userData?.name || user?.email || 'U')[0].toUpperCase()
-              )}
-            </div>
-            <div style={{ overflow: 'hidden' }}>
-              <p style={{ color: '#fff', fontSize: '.8rem', fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {userData?.name || 'Usuario'}
-              </p>
-              <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.7rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.email}
-              </p>
-            </div>
-          </div>
-          <button className="sidebar-link" onClick={logout} style={{ color: 'rgba(255,120,120,.9)', width: '100%' }}>
-            <LogOut size={17} /> Cerrar Sesión
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main Content ── */}
-      <main style={{ flex: 1, background: 'var(--gray-50)', padding: '2rem', overflow: 'auto' }}>
+    <main style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", background: 'var(--gray-50)', padding: '2rem', overflow: 'auto' }}>
         {/* Header */}
         <div className="animate-fade-up" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
@@ -366,51 +246,50 @@ const DriversListPage = () => {
             </table>
           </div>
         </div>
-      </main>
 
-      {/* ── Modal de Confirmación de Eliminación ── */}
-      {deleteId && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-        }}>
+        {/* ── Modal de Confirmación de Eliminación ── */}
+        {deleteId && (
           <div style={{
-            background: '#fff', borderRadius: '12px', padding: '2rem', boxShadow: '0 20px 60px rgba(0,0,0,.3)',
-            maxWidth: 400, textAlign: 'center'
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
           }}>
-            <AlertTriangle size={48} style={{ margin: '0 auto 1rem', color: '#dc2626' }} />
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 .5rem', color: 'var(--gray-900)' }}>
-              Confirmar eliminación
-            </h2>
-            <p style={{ color: 'var(--gray-600)', marginBottom: '1.5rem', fontSize: '.875rem' }}>
-              ¿Está seguro de que desea eliminar este conductor? Esta acción no se puede deshacer.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <button
-                onClick={() => setDeleteId(null)}
-                style={{
-                  padding: '.6rem 1.25rem', borderRadius: '8px', border: '1px solid var(--gray-300)',
-                  background: '#fff', cursor: 'pointer', fontWeight: 500, fontSize: '.875rem',
-                  transition: 'all 0.2s'
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleDelete}
-                style={{
-                  padding: '.6rem 1.25rem', borderRadius: '8px', background: '#dc2626', color: '#fff',
-                  border: 'none', cursor: 'pointer', fontWeight: 500, fontSize: '.875rem',
-                  transition: 'all 0.2s'
-                }}
-              >
-                Eliminar
-              </button>
+            <div style={{
+              background: '#fff', borderRadius: '12px', padding: '2rem', boxShadow: '0 20px 60px rgba(0,0,0,.3)',
+              maxWidth: 400, textAlign: 'center'
+            }}>
+              <AlertTriangle size={48} style={{ margin: '0 auto 1rem', color: '#dc2626' }} />
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 .5rem', color: 'var(--gray-900)' }}>
+                Confirmar eliminación
+              </h2>
+              <p style={{ color: 'var(--gray-600)', marginBottom: '1.5rem', fontSize: '.875rem' }}>
+                ¿Está seguro de que desea eliminar este conductor? Esta acción no se puede deshacer.
+              </p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <button
+                  onClick={() => setDeleteId(null)}
+                  style={{
+                    padding: '.6rem 1.25rem', borderRadius: '8px', border: '1px solid var(--gray-300)',
+                    background: '#fff', cursor: 'pointer', fontWeight: 500, fontSize: '.875rem',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDelete}
+                  style={{
+                    padding: '.6rem 1.25rem', borderRadius: '8px', background: '#dc2626', color: '#fff',
+                    border: 'none', cursor: 'pointer', fontWeight: 500, fontSize: '.875rem',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </main>
   );
 };
 

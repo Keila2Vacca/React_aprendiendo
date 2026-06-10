@@ -60,7 +60,10 @@ const LoginPage = () => {
       });
 
       setSessionId(sessionId, loginTime);
-      navigate("/dashboard");
+      // Pequeno delay para permitir que onAuthStateChanged actualice el usuario
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 100);
     } catch (error) {
       console.error("Login error:", error);
       let message = "Error de autenticación. Verifique sus credenciales.";
@@ -122,7 +125,10 @@ const LoginPage = () => {
 
       setSessionId(sessionId, loginTime);
       setLinkState(null);
-      navigate("/dashboard");
+      // Pequeno delay para permitir que onAuthStateChanged actualice el usuario
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 100);
     } catch (err) {
       console.error("Link with password error:", err);
       let msg = "Error al vincular. Intente nuevamente.";
@@ -197,7 +203,10 @@ const LoginPage = () => {
 
       setSessionId(sessionId, loginTime);
       setLinkState(null);
-      navigate("/dashboard");
+      // Pequeno delay para permitir que onAuthStateChanged actualice el usuario
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 100);
     } catch (err) {
       console.error("Link with provider error:", err);
       setLinkError("Error al iniciar sesión con el proveedor original: " + (err.message || err.code));
@@ -261,7 +270,10 @@ const LoginPage = () => {
       });
 
       setSessionId(sessionId, loginTime);
-      navigate("/dashboard");
+      // Pequeno delay para permitir que onAuthStateChanged actualice el usuario
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 100);
     } catch (error) {
       if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
         // Usuario cerró el popup — no mostrar error

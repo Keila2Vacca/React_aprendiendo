@@ -178,7 +178,7 @@ const BookTicketPage = () => {
   };
 
   return (
-    <main style={{ background: 'var(--gray-50)', padding: '2rem', overflow: 'auto', fontFamily: "'Inter', sans-serif" }}>
+    <main style={{ background: 'var(--gray-50)', padding: '2rem', overflow: 'auto', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
       <div className="animate-fade-up" style={{ marginBottom: '1.5rem' }}>
       <Link to="/tickets" style={{ display: 'inline-flex', alignItems: 'center', gap: '.3rem', fontSize: '.8rem', color: 'var(--green-main)', fontWeight: 600, marginBottom: '.5rem' }}>
         <ArrowLeft size={14} /> Volver a Mis Pasajes
@@ -402,7 +402,7 @@ const BookTicketPage = () => {
           </div>
         )}
       </div>
-    </main>
+      </main>
   );
 };
 

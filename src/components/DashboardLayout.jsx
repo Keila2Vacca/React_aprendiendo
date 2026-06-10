@@ -92,6 +92,26 @@ const DashboardLayout = ({ children }) => {
           </button>
 
           <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', padding: '.5rem 1.25rem .25rem', margin: '0.5rem 0 0' }}>
+            Conductores
+          </p>
+
+          <button
+            className="sidebar-link"
+            onClick={() => navigate('/drivers/new')}
+            style={{ color: '#fff', padding: '0.75rem 1.25rem', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 500, fontSize: '0.9rem' }}
+          >
+            <Users size={18} /> Nuevo Conductor
+          </button>
+
+          <button
+            className="sidebar-link"
+            onClick={() => navigate('/drivers')}
+            style={{ color: '#fff', padding: '0.75rem 1.25rem', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 500, fontSize: '0.9rem' }}
+          >
+            <Bus size={18} /> Listado de Conductores
+          </button>
+
+          <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', padding: '.5rem 1.25rem .25rem', margin: '0.5rem 0 0' }}>
             Sistema
           </p>
 
