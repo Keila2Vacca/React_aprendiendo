@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import logo from '../assets/imagotipo.png';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../hooks/useUserData';
@@ -8,10 +7,10 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { LayoutDashboard, TableProperties, LogOut, Bus, Users, Clock, Ticket, ChevronDown, Plus } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
-  const navigate = useNavigate();
   const [ticketCount, setTicketCount] = useState(0);
+  const [clientCount, setClientCount] = useState(0);
   const [sessionsCount, setSessionsCount] = useState(0);
   const [expandedMenu, setExpandedMenu] = useState(false);
 
@@ -24,6 +23,10 @@ const Dashboard = () => {
         // Fetch user tickets count
         const ticketsSnap = await getDocs(query(collection(db, 'tickets'), where('userId', '==', user.uid)));
         setTicketCount(ticketsSnap.size);
+
+        // Fetch user clients count
+        const clientsSnap = await getDocs(query(collection(db, 'clients'), where('userId', '==', user.uid)));
+        setClientCount(clientsSnap.size);
 
         // Fetch sessions count
         const sessionsSnap = await getDocs(query(collection(db, 'userSessions'), where('userId', '==', user.uid)));
@@ -50,8 +53,9 @@ const Dashboard = () => {
 
   const stats = [
     { icon: <Ticket size={22} />, label: 'Pasajes Reservados', value: ticketCount, color: '#2d6a35' },
+    { icon: <Users size={22} />, label: 'Clientes Registrados', value: clientCount, color: '#0284c7' },
     { icon: <Clock size={22} />, label: 'Mis Sesiones', value: sessionsCount, color: '#e8a020' },
-    { icon: <Bus size={22} />, label: 'Rutas Disponibles', value: '4', color: '#1a4a1f' },
+    { icon: <LayoutDashboard size={22} />, label: 'Rutas Disponibles', value: '4', color: '#1a4a1f' }, // Corregido icono para rutas
   ];
 
   return (
@@ -270,7 +274,7 @@ const Dashboard = () => {
               </h2>
             </div>
             <p style={{ color: 'var(--gray-600)', fontSize: '.875rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-              Gestiona pasajes: reserva un nuevo viaje, consulta pasajes adquiridos, edítalos, elimínalos o imprímelos en formato de abordaje.
+              Gestiona pasajes: reserva un nuevo viaje, consulta pasajes adquiridos, edítalos, elimínalos o imprímelos en formato de boardsje.
             </p>
             <div style={{ display: 'flex', gap: '.75rem' }}>
               <Link
@@ -296,6 +300,47 @@ const Dashboard = () => {
                 }}
               >
                 Ver Mis Pasajes
+              </Link>
+            </div>
+          </div>
+
+          {/* Gestión de Clientes Card */}
+          <div className="card" style={{ padding: '1.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', background: '#0284c718', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7' }}>
+                <Users size={20} />
+              </div>
+              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--green-dark)', margin: 0 }}>
+                Gestión de Clientes
+              </h2>
+            </div>
+            <p style={{ color: 'var(--gray-600)', fontSize: '.875rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+              Administra clientes: registra nuevos clientes, edítalos, consulta sus datos, elimínalos o mantén un registro actualizado de contactos.
+            </p>
+            <div style={{ display: 'flex', gap: '.75rem' }}>
+              <Link
+                to="/clients/new"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+                  background: 'linear-gradient(135deg, #0284c7, #1e7ba8)',
+                  color: '#fff', fontWeight: 600, fontSize: '.825rem',
+                  padding: '.5rem 1rem', borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(2,132,199,.25)', transition: 'all .2s',
+                }}
+              >
+                Nuevo Cliente
+              </Link>
+              <Link
+                to="/clients"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+                  background: 'var(--gray-100)',
+                  color: 'var(--gray-800)', fontWeight: 600, fontSize: '.825rem',
+                  padding: '.5rem 1rem', borderRadius: '8px',
+                  transition: 'all .2s',
+                }}
+              >
+                Ver Clientes
               </Link>
             </div>
           </div>
@@ -342,6 +387,8 @@ const Dashboard = () => {
               {[
                 { label: 'Reservar un nuevo pasaje', to: '/tickets/new' },
                 { label: 'Listado de mis pasajes', to: '/tickets' },
+                { label: 'Nuevo cliente', to: '/clients/new' },
+                { label: 'Gestión de clientes', to: '/clients' },
                 { label: 'Historial de Sesiones', to: '/sessions' },
                 { label: 'Playground de Hooks', to: '/hooks' },
               ].map((item, i) => (

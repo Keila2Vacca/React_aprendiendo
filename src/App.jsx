@@ -43,6 +43,7 @@ import UseActionStateEjemplo from './playground/Hooks/UseActionState/UseActionSt
 // Auth wrappers
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicRoute from './components/PublicRoute'
+import DashboardLayout from './components/DashboardLayout'
 
 // Tickets CRUD Pages
 import TicketsListPage from './pages/tickets/TicketsListPage'
@@ -55,6 +56,11 @@ import DriversListPage from './pages/drivers/DriversListPage'
 import AddDriverPage from './pages/drivers/AddDriverPage'
 import EditDriverPage from './pages/drivers/EditDriverPage'
 import ViewDriverPage from './pages/drivers/ViewDriverPage'
+// Clients CRUD Pages
+import ClientsListPage from './pages/clients/ClientsListPage'
+import AddClientPage from './pages/clients/AddClientPage'
+import EditClientPage from './pages/clients/EditClientPage'
+import ViewClientPage from './pages/clients/ViewClientPage'
 
 function App() {
   return (
@@ -88,29 +94,69 @@ function App() {
         {/* Dashboard Route */}
         <Route path='/dashboard' element={
           <ProtectedRoute>
-            <Dashboard />
+            <DashboardLayout>
+              <Dashboard />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
 
         {/* Tickets CRUD Routes */}
         <Route path='/tickets' element={
           <ProtectedRoute>
-            <TicketsListPage />
+            <DashboardLayout>
+              <TicketsListPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path='/tickets/new' element={
           <ProtectedRoute>
-            <BookTicketPage />
+            <DashboardLayout>
+              <BookTicketPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path='/tickets/edit/:id' element={
           <ProtectedRoute>
-            <EditTicketPage />
+            <DashboardLayout>
+              <EditTicketPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
         <Route path='/tickets/view/:id' element={
           <ProtectedRoute>
-            <ViewTicketPage />
+            <DashboardLayout>
+              <ViewTicketPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Clients CRUD Routes */}
+        <Route path='/clients' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ClientsListPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/clients/new' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <AddClientPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/clients/edit/:id' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <EditClientPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/clients/view/:id' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ViewClientPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
 
@@ -142,7 +188,9 @@ function App() {
         {/* Sessions Route */}
         <Route path='/sessions' element={
           <ProtectedRoute>
-            <SessionsPage />
+            <DashboardLayout>
+              <SessionsPage />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
 
