@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import logo from '../../assets/imagotipo.png';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../hooks/useUserData';
@@ -11,6 +11,7 @@ const DriversListPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [drivers, setDrivers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -173,14 +174,14 @@ const DriversListPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
               <Link
                 to="/drivers/new"
-                className="sidebar-link"
+                className={`sidebar-link ${location.pathname === '/drivers/new' ? 'active' : ''}`}
                 style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
               >
                 <Plus size={16} /> Agregar Conductor
               </Link>
               <Link
                 to="/drivers"
-                className="sidebar-link active"
+                className={`sidebar-link ${location.pathname === '/drivers' ? 'active' : ''}`}
                 style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
               >
                 <Users size={16} /> Listado de Conductores

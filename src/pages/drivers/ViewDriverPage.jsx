@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
 import logo from '../../assets/imagotipo.png';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../hooks/useUserData';
 import { db } from '../../firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { LayoutDashboard, LogOut, Users, ArrowLeft, Edit2, AlertCircle, ChevronDown, Plus, User, Mail, Phone, FileText, Calendar, Truck } from 'lucide-react';
+import { LayoutDashboard, LogOut, Users, ArrowLeft, Edit2, AlertCircle, ChevronDown, Plus, User, Mail, Phone, FileText, Calendar, Truck, TableProperties } from 'lucide-react';
 
 const ViewDriverPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [expandedMenu, setExpandedMenu] = useState(false);
 
   const [driver, setDriver] = useState(null);
@@ -154,7 +155,7 @@ const ViewDriverPage = () => {
           </Link>
 
           <Link to="/tickets" className="sidebar-link">
-            <LayoutDashboard size={18} /> Ver Pasajes
+            <TableProperties size={18} /> Ver Pasajes
           </Link>
 
           {/* Menú desplegable para Conductores */}
@@ -184,14 +185,14 @@ const ViewDriverPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
               <Link
                 to="/drivers/new"
-                className="sidebar-link"
+                className={`sidebar-link ${location.pathname === '/drivers/new' ? 'active' : ''}`}
                 style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
               >
                 <Plus size={16} /> Agregar Conductor
               </Link>
               <Link
                 to="/drivers"
-                className="sidebar-link"
+                className={`sidebar-link ${location.pathname === '/drivers' ? 'active' : ''}`}
                 style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
               >
                 <Users size={16} /> Listado de Conductores

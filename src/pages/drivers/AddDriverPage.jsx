@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import logo from '../../assets/imagotipo.png';
 import { useAuth } from '../../context/AuthContext';
 import { useUserData } from '../../hooks/useUserData';
 import { db } from '../../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { LayoutDashboard, LogOut, Users, ArrowLeft, CheckCircle2, AlertCircle, ChevronDown, Plus } from 'lucide-react';
+import { LayoutDashboard, LogOut, Users, ArrowLeft, CheckCircle2, AlertCircle, ChevronDown, Plus, TableProperties } from 'lucide-react';
 
 const AddDriverPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const { userData, loading: dataLoading } = useUserData();
   const navigate = useNavigate();
+  const location = useLocation();
   const [expandedMenu, setExpandedMenu] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -166,7 +167,7 @@ const AddDriverPage = () => {
           </Link>
 
           <Link to="/tickets" className="sidebar-link">
-            <LayoutDashboard size={18} /> Ver Pasajes
+            <TableProperties size={18} /> Ver Pasajes
           </Link>
 
           {/* Menú desplegable para Conductores */}
@@ -196,14 +197,14 @@ const AddDriverPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.1rem', paddingLeft: '1rem', marginBottom: '.3rem' }}>
               <Link
                 to="/drivers/new"
-                className="sidebar-link active"
+                className={`sidebar-link ${location.pathname === '/drivers/new' ? 'active' : ''}`}
                 style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
               >
                 <Plus size={16} /> Agregar Conductor
               </Link>
               <Link
                 to="/drivers"
-                className="sidebar-link"
+                className={`sidebar-link ${location.pathname === '/drivers' ? 'active' : ''}`}
                 style={{ fontSize: '.85rem', paddingLeft: '.75rem' }}
               >
                 <Users size={16} /> Listado de Conductores
