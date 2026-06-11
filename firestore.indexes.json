@@ -2,29 +2,29 @@
   "indexes": [
     {
       "collectionGroup": "clients",
-      "queryScope": "Collection",
+      "queryScope": "COLLECTION",
       "fields": [
         {
           "fieldPath": "userId",
-          "order": "Ascending"
+          "order": "ASCENDING"
         },
         {
           "fieldPath": "createdAt",
-          "order": "Descending"
+          "order": "DESCENDING"
         }
       ]
     },
     {
       "collectionGroup": "tickets",
-      "queryScope": "Collection",
+      "queryScope": "COLLECTION",
       "fields": [
         {
           "fieldPath": "userId",
-          "order": "Ascending"
+          "order": "ASCENDING"
         },
         {
           "fieldPath": "createdAt",
-          "order": "Descending"
+          "order": "DESCENDING"
         }
       ]
     }
