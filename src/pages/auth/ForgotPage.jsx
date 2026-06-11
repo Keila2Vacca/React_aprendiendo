@@ -24,10 +24,19 @@ const ForgotPage = () => {
 
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email);
-      setStatus({ 
-        type: "success", 
-        message: "Enlace enviado. Por favor revise su bandeja de entrada (y la carpeta de spam)." 
+      const actionCodeSettings = {
+        url: "https://hacaritamaweb.web.app/reset-password",
+        handleCodeInApp: true
+      };
+
+      await sendPasswordResetEmail(
+        auth,
+        email,
+        actionCodeSettings
+      );
+      setStatus({
+        type: "success",
+        message: "Enlace enviado. Por favor revise su bandeja de entrada (y la carpeta de spam)."
       });
       setEmail("");
     } catch (error) {
@@ -75,14 +84,14 @@ const ForgotPage = () => {
             Ingrese su correo electrónico para recibir un enlace de recuperación.
           </p>
         </div>
-        
+
         {status.type && (
-          <div style={{ 
-            padding: "1rem", 
-            borderRadius: "10px", 
-            marginBottom: "1.5rem", 
-            display: "flex", 
-            alignItems: "flex-start", 
+          <div style={{
+            padding: "1rem",
+            borderRadius: "10px",
+            marginBottom: "1.5rem",
+            display: "flex",
+            alignItems: "flex-start",
             gap: ".75rem",
             fontSize: ".875rem",
             background: status.type === "success" ? "#dcfce7" : "#fee2e2",
