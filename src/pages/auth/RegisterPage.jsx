@@ -9,6 +9,9 @@ import {
   GithubAuthProvider,
   createUserWithEmailAndPassword,
   updateProfile,
+  linkWithCredential,
+  fetchSignInMethodsForEmail,
+  signInWithEmailAndPassword
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../../firebase";
@@ -23,6 +26,13 @@ const RegisterPage = () => {
   const [status, setStatus] = useState({ type: null, message: "" });
   const [loading, setLoading] = useState(false);
 
+  // Estados para el flujo de vinculación de cuentas
+  const [linkState, setLinkState] = useState(null); // { email, pendingCred, provider, methods: [] }
+  const [linkPassword, setLinkPassword] = useState("");
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [linkError, setLinkError] = useState("");
+  const [showLinkPassword, setShowLinkPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,6 +40,16 @@ const RegisterPage = () => {
     password: "",
     confirmPassword: "",
   });
+
+  // Función para validar contraseña
+  const validatePassword = (pwd) => {
+    if (pwd.length < 10) return "La contraseña debe tener al menos 10 caracteres.";
+    if (!/[A-Z]/.test(pwd)) return "La contraseña debe contener al menos una mayúscula.";
+    if (!/[a-z]/.test(pwd)) return "La contraseña debe contener al menos una minúscula.";
+    if (!/[0-9]/.test(pwd)) return "La contraseña debe contener al menos un número.";
+    if (!/[!@#$%^&*()_+\-=\[\]{};:'",.<>?]/.test(pwd)) return "La contraseña debe contener al menos un carácter especial (!@#$%^&*...).";
+    return null;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,8 +72,9 @@ const RegisterPage = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setStatus({ type: "error", message: "La contraseña debe tener al menos 6 caracteres." });
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setStatus({ type: "error", message: passwordError });
       return;
     }
 
@@ -92,6 +113,126 @@ const RegisterPage = () => {
     }
   };
 
+  // Vincular cuenta mediante contraseña
+  const handleLinkWithPassword = async (e) => {
+    e.preventDefault();
+    if (!linkPassword) {
+      setLinkError("Por favor ingrese la contraseña");
+      return;
+    }
+    setLinkLoading(true);
+    setLinkError("");
+    try {
+      // 1. Iniciar sesión con el método original
+      const userCredential = await signInWithEmailAndPassword(auth, linkState.email, linkPassword);
+      const user = userCredential.user;
+
+      // 2. Vincular nueva credencial
+      await linkWithCredential(user, linkState.pendingCred);
+
+      // 3. Registrar sesión
+      const sessionId = `${user.uid}_${Date.now()}`;
+      const loginTime = new Date();
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName || user.email?.split("@")[0] || "Usuario",
+        email: user.email || "",
+        photoURL: user.photoURL || null,
+        lastLogin: serverTimestamp(),
+        authMethod: linkState.provider.toLowerCase(),
+      }, { merge: true });
+
+      await setDoc(doc(db, "userSessions", sessionId), {
+        userId: user.uid,
+        userEmail: user.email || "",
+        userName: user.displayName || user.email?.split("@")[0] || "Usuario",
+        userPhoto: user.photoURL || null,
+        loginTime: serverTimestamp(),
+        logoutTime: null,
+        sessionDuration: null,
+        authMethod: linkState.provider.toLowerCase(),
+        status: "active",
+      });
+
+      setSessionId(sessionId, loginTime);
+      setLinkState(null);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Link with password error:", err);
+      let msg = "Error al vincular. Intente nuevamente.";
+      if (err.code === "auth/wrong-password") {
+        msg = "La contraseña es incorrecta.";
+      }
+      setLinkError(msg);
+    } finally {
+      setLinkLoading(false);
+    }
+  };
+
+  // Vincular cuenta mediante proveedor social
+  const handleLinkWithProvider = async (existingProviderName) => {
+    setLinkLoading(true);
+    setLinkError("");
+    let existingProvider;
+
+    switch (existingProviderName) {
+      case "google.com":
+      case "Google":
+        existingProvider = new GoogleAuthProvider();
+        break;
+      case "facebook.com":
+      case "Facebook":
+        existingProvider = new FacebookAuthProvider();
+        break;
+      case "github.com":
+      case "GitHub":
+        existingProvider = new GithubAuthProvider();
+        break;
+      default:
+        setLinkLoading(false);
+        return;
+    }
+
+    try {
+      const result = await signInWithPopup(auth, existingProvider);
+      const user = result.user;
+
+      await linkWithCredential(user, linkState.pendingCred);
+
+      const sessionId = `${user.uid}_${Date.now()}`;
+      const loginTime = new Date();
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: user.displayName || user.email?.split("@")[0] || "Usuario",
+        email: user.email || "",
+        photoURL: user.photoURL || null,
+        lastLogin: serverTimestamp(),
+        authMethod: linkState.provider.toLowerCase(),
+      }, { merge: true });
+
+      await setDoc(doc(db, "userSessions", sessionId), {
+        userId: user.uid,
+        userEmail: user.email || "",
+        userName: user.displayName || user.email?.split("@")[0] || "Usuario",
+        userPhoto: user.photoURL || null,
+        loginTime: serverTimestamp(),
+        logoutTime: null,
+        sessionDuration: null,
+        authMethod: linkState.provider.toLowerCase(),
+        status: "active",
+      });
+
+      setSessionId(sessionId, loginTime);
+      setLinkState(null);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Link with provider error:", err);
+      setLinkError("Error al iniciar sesión con el proveedor original: " + (err.message || err.code));
+    } finally {
+      setLinkLoading(false);
+    }
+  };
+
   const handleSocialLogin = async (provider) => {
     setStatus({ type: null, message: "" });
     setLoading(true);
@@ -104,7 +245,6 @@ const RegisterPage = () => {
         break;
       case "Facebook":
         authProvider = new FacebookAuthProvider();
-        // Scopes necesarios para obtener email y nombre del usuario
         authProvider.addScope("email");
         authProvider.addScope("public_profile");
         break;
@@ -151,7 +291,22 @@ const RegisterPage = () => {
       if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") {
         // Usuario cerró el popup — no mostrar error
       } else if (error.code === "auth/account-exists-with-different-credential") {
-        setStatus({ type: "error", message: "Ya existe una cuenta con este correo registrada con otro método (Google, GitHub o contraseña). Por favor inicia sesión con ese método." });
+        const email = error.customData?.email || error.email;
+        const pendingCred = error.customData?.credential || GoogleAuthProvider.credentialFromError(error) || GithubAuthProvider.credentialFromError(error) || FacebookAuthProvider.credentialFromError(error);
+        
+        let methods = [];
+        try {
+          methods = await fetchSignInMethodsForEmail(auth, email);
+        } catch (fetchError) {
+          console.error("Error al obtener métodos de inicio de sesión:", fetchError);
+        }
+
+        setLinkState({
+          email,
+          pendingCred,
+          provider,
+          methods: methods && methods.length > 0 ? methods : ["password"]
+        });
       } else if (error.code === "auth/operation-not-allowed") {
         setStatus({ type: "error", message: "El registro con " + provider + " no está habilitado. Contacte al administrador." });
       } else if (error.code === "auth/popup-blocked") {
@@ -346,6 +501,114 @@ const RegisterPage = () => {
           </Link>
         </p>
       </div>
+
+      {/* Modal para Vincular Cuentas */}
+      {linkState && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center",
+          justifyContent: "center", zIndex: 1000, padding: "1rem",
+          backdropFilter: "blur(4px)"
+        }}>
+          <div className="animate-fade-up" style={{
+            background: "#fff", borderRadius: "var(--radius-lg)",
+            padding: "2rem", maxWidth: "450px", width: "100%",
+            boxShadow: "var(--shadow-xl)", border: "1px solid var(--gray-200)",
+            position: "relative"
+          }}>
+            <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--green-dark)", margin: "0 0 .5rem", textAlign: "center" }}>
+              Vincular Cuenta Existente
+            </h2>
+            <p style={{ color: "var(--gray-600)", fontSize: ".875rem", lineHeight: 1.5, margin: "0 0 1.5rem", textAlign: "center" }}>
+              El correo <strong>{linkState.email}</strong> ya está registrado con otro método. Inicia sesión con el método original para vincular tu cuenta de <strong>{linkState.provider}</strong>.
+            </p>
+
+            {linkError && (
+              <div style={{
+                padding: ".75rem 1rem", borderRadius: "10px", marginBottom: "1.25rem",
+                fontSize: ".875rem", background: "#fee2e2", color: "#991b1b", border: "1px solid #fecaca"
+              }}>
+                {linkError}
+              </div>
+            )}
+
+            {linkState.methods.includes("password") ? (
+              <form onSubmit={handleLinkWithPassword} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div>
+                  <label htmlFor="link-password-reg" style={{ display: "block", fontSize: ".875rem", fontWeight: 600, color: "var(--gray-800)", marginBottom: ".4rem" }}>
+                    Contraseña de tu cuenta existente
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <Lock size={17} style={{ position: "absolute", left: ".85rem", top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }} />
+                    <input
+                      id="link-password-reg"
+                      className="form-input"
+                      type={showLinkPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={linkPassword}
+                      onChange={(e) => setLinkPassword(e.target.value)}
+                      style={{ paddingRight: "3rem" }}
+                      required
+                      disabled={linkLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLinkPassword(!showLinkPassword)}
+                      style={{ position: "absolute", right: ".85rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--gray-400)", display: "flex" }}
+                    >
+                      {showLinkPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" className="btn-green" disabled={linkLoading} style={{ marginTop: ".5rem" }}>
+                  {linkLoading ? "Vinculando..." : "Vincular y Acceder"}
+                </button>
+              </form>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: ".75rem" }}>
+                {linkState.methods.map((method) => {
+                  let providerLabel = "";
+                  let providerColor = "var(--green-main)";
+                  if (method === "google.com") { providerLabel = "Google"; providerColor = "#4285F4"; }
+                  else if (method === "facebook.com") { providerLabel = "Facebook"; providerColor = "#1877F2"; }
+                  else if (method === "github.com") { providerLabel = "GitHub"; providerColor = "#24292e"; }
+                  else return null;
+
+                  return (
+                    <button
+                      key={method}
+                      onClick={() => handleLinkWithProvider(method)}
+                      disabled={linkLoading}
+                      className="social-btn"
+                      style={{
+                        width: "100%", display: "flex", gap: ".5rem", justifyContent: "center",
+                        background: providerColor, color: "#fff", border: "none", fontWeight: 700
+                      }}
+                    >
+                      Iniciar sesión con {providerLabel} para vincular
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <button
+              onClick={() => setLinkState(null)}
+              disabled={linkLoading}
+              style={{
+                width: "100%", marginTop: "1rem", background: "none", border: "1px solid var(--gray-200)",
+                color: "var(--gray-600)", padding: ".625rem", borderRadius: "var(--radius-sm)",
+                fontWeight: 600, cursor: "pointer", fontSize: ".875rem", transition: "var(--transition)"
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "var(--gray-50)"}
+              onMouseLeave={e => e.currentTarget.style.background = "none"}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

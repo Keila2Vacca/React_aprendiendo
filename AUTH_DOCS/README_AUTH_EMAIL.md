@@ -42,7 +42,7 @@ Sistema de autenticación tradicional basado en email y contraseña usando Fireb
 
 ### Paso 2: Configurar Reglas de Firestore
 
-En **Firestore Database** → **Rules**, asegúrate de que los usuarios puedan leer y escribir sus propios datos de sesión:
+En **Firestore Database** → **Rules**, asegúrate de que los usuarios puedan leer y escribir sus propios datos:
 
 ```firestore
 rules_version = '2';
@@ -57,6 +57,23 @@ service cloud.firestore {
     // Permite lectura/escritura en userData para el usuario autenticado
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
+    }
+
+    // Permite lectura, creación, edición y eliminación de tickets solo para el usuario propietario
+    match /tickets/{ticketId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Permite lectura de la colección de rutas para todos los usuarios autenticados
+    match /rutas/{rutaId} {
+      allow read: if request.auth != null;
+    }
+
+    // Permite lectura de viajes disponibles para usuarios autenticados
+    match /viajes/{viajeId} {
+      allow read: if request.auth != null;
     }
   }
 }

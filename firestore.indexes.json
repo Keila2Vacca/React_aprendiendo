@@ -1,0 +1,33 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "clients",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "Descending"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tickets",
+      "queryScope": "Collection",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "Ascending"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "Descending"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

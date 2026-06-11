@@ -6,7 +6,9 @@ import { collection, getDocs, query, orderBy, updateDoc, doc, Timestamp } from '
 import { useAuth } from '../context/AuthContext';
 import { useUserData } from '../hooks/useUserData';
 import { signOut } from 'firebase/auth';
-import { LayoutDashboard, TableProperties, LogOut, Bus, Search, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, TableProperties, LogOut, Bus, Search, ArrowLeft, Ticket, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const SessionsPage = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -21,6 +23,63 @@ const SessionsPage = () => {
   const handleLogout = async () => {
     await logout();
     navigate('/');
+  };
+
+  const exportToPDF = async () => {
+    try {
+      const tableElement = document.querySelector('.data-table');
+      if (!tableElement) {
+        alert('No se encontró la tabla para exportar');
+        return;
+      }
+
+      // Capturar la tabla como imagen
+      const canvas = await html2canvas(tableElement, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 20; // Márgenes de 10mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 10;
+
+      // Título
+      pdf.setFontSize(16);
+      pdf.text('Registro de Sesiones - COOTRANS', 10, 10);
+      pdf.setFontSize(10);
+      pdf.text(`Generado: ${new Date().toLocaleString('es-CO')}`, 10, 20);
+
+      position = 28;
+
+      // Agregar imagen de la tabla
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight - 50;
+
+      // Agregar más páginas si es necesario
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`sesiones_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error al exportar PDF:', error);
+      alert('Error al exportar la tabla como PDF');
+    }
   };
 
   const filteredSessions = useMemo(() => {
@@ -72,80 +131,6 @@ const SessionsPage = () => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
 
-      {/* ── Sidebar ── */}
-      <aside
-        className="bg-cootrans"
-        style={{
-          width: 260, height: '100vh', display: 'flex', flexDirection: 'column',
-          padding: '1.5rem 1rem', flexShrink: 0, position: 'sticky', top: 0,
-          boxShadow: '4px 0 20px rgba(0,0,0,.15)',
-        }}
-      >
-        {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '2rem', padding: '0 .25rem' }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: '50%',
-            background: 'rgba(255,255,255,.15)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem',
-            border: '1.5px solid rgba(255,255,255,.25)',
-          }}>
-            <span style={{ fontSize: '2.2rem' }}>
-              <img src={logo} alt="Logo" />
-            </span>
-          </div>
-          <div>
-            <p style={{ color: '#fff', fontWeight: 800, fontSize: '.95rem', margin: 0, lineHeight: 1.2 }}>COOTRANS</p>
-            <p style={{ color: 'rgba(255,255,255,.55)', fontSize: '.72rem', margin: 0 }}>Hacaritama</p>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '.3rem', flex: 1, overflowY: 'auto', marginBottom: '1rem' }}>
-          <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', padding: '.5rem 1.25rem .25rem', margin: 0 }}>
-            Menú Principal
-          </p>
-
-          <button id="nav-dashboard" className="sidebar-link" onClick={() => navigate('/dashboard')}>
-            <LayoutDashboard size={18} /> Dashboard
-          </button>
-
-          <button id="nav-sessions" className="sidebar-link active" onClick={() => navigate('/sessions')}>
-            <TableProperties size={18} /> Ver Sesiones
-          </button>
-        </nav>
-
-        {/* User + Logout */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.15)', paddingTop: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', padding: '.5rem .75rem', marginBottom: '.75rem' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'rgba(255,255,255,.15)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-              fontSize: '.9rem', fontWeight: 700, color: '#fff', 
-              flexShrink: 0, overflow: 'hidden'
-            }}>
-              {userData?.photoURL ? (
-                <img src={userData.photoURL} alt="Perfil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                (userData?.name || user?.email || 'U')[0].toUpperCase()
-              )}
-            </div>
-            <div style={{ overflow: 'hidden' }}>
-              <p style={{ color: '#fff', fontSize: '.8rem', fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {userData?.name || 'Usuario'}
-              </p>
-              <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.7rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.email}
-              </p>
-            </div>
-          </div>
-          <button id="btn-logout" className="sidebar-link" onClick={handleLogout}
-            style={{ color: 'rgba(255,120,120,.9)', width: '100%' }}>
-            <LogOut size={17} /> Cerrar Sesión
-          </button>
-        </div>
-      </aside>
-
       {/* ── Main Content ── */}
       <main style={{ flex: 1, background: 'var(--gray-50)', padding: '2rem', overflow: 'auto' }}>
 
@@ -174,6 +159,35 @@ const SessionsPage = () => {
               {filteredSessions.length} registro{filteredSessions.length !== 1 ? 's' : ''} encontrado{filteredSessions.length !== 1 ? 's' : ''}
             </p>
           </div>
+          <button
+            id="export-pdf-btn"
+            onClick={exportToPDF}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '.5rem',
+              padding: '.7rem 1.25rem',
+              borderRadius: '10px',
+              background: 'var(--green-main)',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '.875rem',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all .2s',
+              boxShadow: '0 2px 8px rgba(45,106,53,.15)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'var(--green-dark)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(45,106,53,.25)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'var(--green-main)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(45,106,53,.15)';
+            }}
+          >
+            <Download size={18} /> Descargar PDF
+          </button>
         </div>
 
         {/* Search */}

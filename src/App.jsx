@@ -40,6 +40,28 @@ import UseCallbackEjemplo from './playground/Hooks/UseCallback/UseCallback'
 import UseInsertionEffectEjemplo from './playground/Hooks/UseInsertionEffect/UseInsertionEffect'
 import UseActionStateEjemplo from './playground/Hooks/UseActionState/UseActionState'
 
+// Auth wrappers
+import ProtectedRoute from './components/ProtectedRoute'
+import PublicRoute from './components/PublicRoute'
+import DashboardLayout from './components/DashboardLayout'
+
+// Tickets CRUD Pages
+import TicketsListPage from './pages/tickets/TicketsListPage'
+import BookTicketPage from './pages/tickets/BookTicketPage'
+import EditTicketPage from './pages/tickets/EditTicketPage'
+import ViewTicketPage from './pages/tickets/ViewTicketPage'
+
+// Drivers CRUD Pages
+import DriversListPage from './pages/drivers/DriversListPage'
+import AddDriverPage from './pages/drivers/AddDriverPage'
+import EditDriverPage from './pages/drivers/EditDriverPage'
+import ViewDriverPage from './pages/drivers/ViewDriverPage'
+// Clients CRUD Pages
+import ClientsListPage from './pages/clients/ClientsListPage'
+import AddClientPage from './pages/clients/AddClientPage'
+import EditClientPage from './pages/clients/EditClientPage'
+import ViewClientPage from './pages/clients/ViewClientPage'
+
 function App() {
   return (
     <BrowserRouter>
@@ -48,19 +70,137 @@ function App() {
         <Route path='/' element={<LandingPage />} />
         
         {/* Auth Routes */}
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/register' element={<RegisterPage />} />
-        <Route path='/forgot-password' element={<ForgotPage />} />
-        <Route path='/reset-password' element={<ResetPage />} />
+        <Route path='/login' element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        } />
+        <Route path='/register' element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        } />
+        <Route path='/forgot-password' element={
+          <PublicRoute>
+            <ForgotPage />
+          </PublicRoute>
+        } />
+        <Route path='/reset-password' element={
+          <PublicRoute>
+            <ResetPage />
+          </PublicRoute>
+        } />
 
         {/* Dashboard Route */}
-        <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='/dashboard' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Dashboard />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Tickets CRUD Routes */}
+        <Route path='/tickets' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <TicketsListPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/tickets/new' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <BookTicketPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/tickets/edit/:id' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <EditTicketPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/tickets/view/:id' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ViewTicketPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Clients CRUD Routes */}
+        <Route path='/clients' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ClientsListPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/clients/new' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <AddClientPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/clients/edit/:id' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <EditClientPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/clients/view/:id' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ViewClientPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Drivers CRUD Routes */}
+        <Route path='/drivers' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <DriversListPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/drivers/new' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <AddDriverPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/drivers/edit/:id' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <EditDriverPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path='/drivers/view/:id' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ViewDriverPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
 
         {/* Facebook Compliance Route */}
         <Route path='/delete-data' element={<DeleteDataPage />} />
 
         {/* Sessions Route */}
-        <Route path='/sessions' element={<SessionsPage />} />
+        <Route path='/sessions' element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <SessionsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
 
         {/* Existing Hooks Home */}
         <Route path='/hooks' element={<HomeHooks />} />
