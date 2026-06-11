@@ -26,7 +26,7 @@ const ForgotPage = () => {
     try {
       const actionCodeSettings = {
         url: "https://hacaritamaweb.web.app/reset-password",
-        handleCodeInApp: false
+        handleCodeInApp: true
       };
 
       await sendPasswordResetEmail(
